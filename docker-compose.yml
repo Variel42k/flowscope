@@ -1,0 +1,168 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: flowscope-clickhouse
+    environment:
+      CLICKHOUSE_DB: flowscope
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: flowscope
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "18123:8123"
+      - "19000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./deploy/clickhouse/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  seed:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.go
+      args:
+        APP: seed
+    container_name: flowscope-seed
+    environment: &flowscope_env
+      FLOWSCOPE_HTTP_ADDR: ":8088"
+      FLOWSCOPE_CLICKHOUSE_DSN: clickhouse://default:flowscope@clickhouse:9000/flowscope
+      FLOWSCOPE_JWT_SECRET: flowscope-dev-secret
+      FLOWSCOPE_ADMIN_USER: admin
+      FLOWSCOPE_ADMIN_PASSWORD: admin123
+      FLOWSCOPE_AUTH_DISABLED: "false"
+      FLOWSCOPE_LOG_LEVEL: info
+      FLOWSCOPE_RETENTION_DAYS: "30"
+      FLOWSCOPE_INVENTORY_PATH: /data/inventory.sample.yaml
+      FLOWSCOPE_INVENTORY_FORMAT: yaml
+      FLOWSCOPE_ENABLE_INVENTORY: "true"
+      FLOWSCOPE_ENABLE_GEOIP: "false"
+      FLOWSCOPE_ENABLE_RDNS: "false"
+      FLOWSCOPE_ENABLE_INTERFACE_ALIAS: "true"
+      FLOWSCOPE_INTERFACE_ALIAS_PATH: /data/interfaces.sample.yaml
+      FLOWSCOPE_SEED_FIXTURE_PATH: /data/flows.fixture.json
+      FLOWSCOPE_LISTEN_NETFLOW_V5: ":2055"
+      FLOWSCOPE_LISTEN_NETFLOW_V9: ":2056"
+      FLOWSCOPE_LISTEN_IPFIX: ":4739"
+      FLOWSCOPE_LISTEN_SFLOW: ":6343"
+      FLOWSCOPE_DEFAULT_QUERY_WINDOW: 15m
+      FLOWSCOPE_ROLLUP_INTERVAL: 1m
+      FLOWSCOPE_SEED_EXIT_SUCCESS: "1"
+    volumes:
+      - ./deploy/seed/inventory.sample.yaml:/data/inventory.sample.yaml:ro
+      - ./deploy/seed/interfaces.sample.yaml:/data/interfaces.sample.yaml:ro
+      - ./deploy/seed/flows.fixture.json:/data/flows.fixture.json:ro
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.go
+      args:
+        APP: api
+    container_name: flowscope-api
+    environment:
+      <<: *flowscope_env
+      FLOWSCOPE_HTTP_ADDR: ":8088"
+    ports:
+      - "8088:8088"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8088/api/health | grep -q '\"status\":\"ok\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - ./deploy/seed/inventory.sample.yaml:/data/inventory.sample.yaml:ro
+      - ./deploy/seed/interfaces.sample.yaml:/data/interfaces.sample.yaml:ro
+      - ./deploy/seed/flows.fixture.json:/data/flows.fixture.json:ro
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  collector:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.go
+      args:
+        APP: collector
+    container_name: flowscope-collector
+    environment:
+      <<: *flowscope_env
+    ports:
+      - "2055:2055/udp"
+      - "2056:2056/udp"
+      - "4739:4739/udp"
+      - "6343:6343/udp"
+    volumes:
+      - ./deploy/seed/inventory.sample.yaml:/data/inventory.sample.yaml:ro
+      - ./deploy/seed/interfaces.sample.yaml:/data/interfaces.sample.yaml:ro
+      - ./deploy/seed/flows.fixture.json:/data/flows.fixture.json:ro
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.go
+      args:
+        APP: worker
+    container_name: flowscope-worker
+    environment:
+      <<: *flowscope_env
+      FLOWSCOPE_ROLLUP_INTERVAL: 30s
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  flowgen:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.go
+      args:
+        APP: flowgen
+    container_name: flowscope-flowgen
+    environment:
+      <<: *flowscope_env
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.web
+      args:
+        VITE_API_BASE: /api
+    container_name: flowscope-web
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  clickhouse_data:

@@ -1,0 +1,5 @@
+10: uplink-core-10g
+11: uplink-edge-10g
+20: server-access-vlan10
+21: server-access-vlan20
+100: internet-uplink
