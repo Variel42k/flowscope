@@ -1,5 +1,5 @@
-blank_issues_enabled: true
+﻿blank_issues_enabled: true
 contact_links:
-  - name: Security report
-    url: https://github.com/flowscope/flowscope/security/policy
-    about: Please report sensitive vulnerabilities privately according to SECURITY.md
+  - name: Security report / Сообщение о безопасности
+    url: https://github.com/Variel42k/flowscope/security/policy
+    about: Please report sensitive vulnerabilities privately according to SECURITY.md / Сообщайте о критичных уязвимостях приватно согласно SECURITY.md

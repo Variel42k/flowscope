@@ -1,129 +1,71 @@
-# API Reference (RU)
+﻿# API Reference / Справочник API
+
+## Русский
 
 Базовый URL:
+- `http://localhost:8088`
+- через web proxy: `http://localhost:5173/api`
 
-- локально: `http://localhost:8088`
-- через web nginx proxy: `http://localhost:5173/api`
+### Auth
+- `POST /api/auth/login`
 
-## Auth
+### Health
+- `GET /api/health`
 
-### `POST /api/auth/login`
+### Data
+- `GET /api/exporters`
+- `GET /api/flows/active`
+- `GET /api/flows/historical`
+- `GET /api/flows/:id`
 
-Request:
+### Aggregates
+- `GET /api/talkers/top`
+- `GET /api/protocols/top`
+- `GET /api/interfaces/top`
 
-```json
-{
-  "username": "admin",
-  "password": "admin123"
-}
-```
+### Visuals
+- `GET /api/sankey`
+- `GET /api/map/graph`
+- `GET /api/map/node/:id`
+- `GET /api/map/edge/:id`
 
-Response:
+### Utility
+- `GET /api/search`
+- `POST /api/inventory/import`
 
-```json
-{
-  "token": "<jwt>",
-  "user": "admin"
-}
-```
+Поддерживаемые query params: `from`, `to`, `page`, `page_size`, `sort_by`, `sort_dir`, сетевые и protocol filters.
 
-## Health
+## English
 
-### `GET /api/health`
+Base URLs:
+- `http://localhost:8088`
+- via web proxy: `http://localhost:5173/api`
 
-Response включает:
+### Auth
+- `POST /api/auth/login`
 
-- `status`
-- `service`
-- `uptime_sec`
-- `auth_enabled`
+### Health
+- `GET /api/health`
 
-## Exporters
+### Data
+- `GET /api/exporters`
+- `GET /api/flows/active`
+- `GET /api/flows/historical`
+- `GET /api/flows/:id`
 
-### `GET /api/exporters`
+### Aggregates
+- `GET /api/talkers/top`
+- `GET /api/protocols/top`
+- `GET /api/interfaces/top`
 
-Возвращает paginated список экспортёров.
+### Visuals
+- `GET /api/sankey`
+- `GET /api/map/graph`
+- `GET /api/map/node/:id`
+- `GET /api/map/edge/:id`
 
-## Flows
+### Utility
+- `GET /api/search`
+- `POST /api/inventory/import`
 
-### `GET /api/flows/active`
-### `GET /api/flows/historical`
-### `GET /api/flows/:id`
-
-Используется для raw flow drill-down.
-
-## Aggregates
-
-### `GET /api/talkers/top`
-### `GET /api/protocols/top`
-### `GET /api/interfaces/top`
-
-Параметр `limit` опционален.
-
-## Visual APIs
-
-### `GET /api/sankey`
-
-Возвращает:
-
-- `nodes[]`
-- `links[]` (source/target/value/flows)
-
-### `GET /api/map/graph`
-
-Параметры:
-
-- `mode`: `host_to_host|subnet_to_subnet|service_to_service|internal_to_external`
-- `group_by`: `none|subnet|service|environment|asn`
-- `min_bytes`
-- `min_flows`
-- `node_id` (ego isolation)
-- плюс базовые фильтры по времени/поиску/экспортёру/протоколу
-
-### `GET /api/map/node/:id`
-### `GET /api/map/edge/:id`
-
-Возвращает детали узла/ребра, series, top lists, matching flows.
-
-## Search and Inventory
-
-### `GET /api/search`
-
-Query param:
-
-- `search`
-
-### `POST /api/inventory/import`
-
-Request:
-
-```json
-{
-  "items": [
-    {
-      "asset_id": "srv-1",
-      "cidr": "10.10.1.10/32",
-      "hostname": "app-01",
-      "service": "frontend",
-      "environment": "prod",
-      "owner_team": "platform"
-    }
-  ]
-}
-```
-
-## Common query params
-
-Для list endpoints поддерживаются:
-
-- `from`, `to` (RFC3339)
-- `page`, `page_size`
-- `sort_by`, `sort_dir`
-- `src_ip`, `dst_ip`, `subnet`
-- `exporter`
-- `protocol`
-- `src_port`, `dst_port`
-- `input_interface`, `output_interface`
-- `asn`, `country`
-- `search`
-- `min_bytes`, `min_flows`
+Supported query params include `from`, `to`, `page`, `page_size`, `sort_by`, `sort_dir`, and network/protocol filters.

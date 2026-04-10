@@ -1,70 +1,43 @@
-# Руководство разработчика (RU)
+﻿# Development Guide / Руководство разработчика
 
-## Локальная разработка
+## Русский
 
-### Backend
-
-Основные сервисы:
-
-- `cmd/collector`
-- `cmd/api`
-- `cmd/worker`
-- `cmd/seed`
-- `cmd/flowgen`
-
-Ключевые пакеты:
-
-- `internal/decoder`
-- `internal/normalize`
-- `internal/enrich`
-- `internal/storage`
-- `internal/graph`
-- `internal/api`
-
-### Frontend
-
-Папка: `web`
-
-Стек:
-
-- React + TypeScript + Vite
-- Tailwind
-- ECharts
-- Cytoscape.js
-- TanStack Table
-
-## Тесты
+Тесты:
 
 ```bash
 go test ./cmd/... ./internal/...
 cd web && npm test -- --run
 ```
 
-## Линтинг/форматирование
+Линт:
 
 ```bash
 golangci-lint run ./...
 cd web && npm run lint
-cd web && npm run format
 ```
 
-## Принципы изменений
+Принципы:
+- небольшие и проверяемые PR
+- обновление документации вместе с изменениями
+- учитывать безопасность на уровне input/auth/config
 
-1. Сначала small working change.
-2. Потом тесты и документация.
-3. Отдельные PR для:
-   - функциональности
-   - миграций схемы
-   - UI-изменений
-   - security hardening
+## English
 
-## Изменения схемы ClickHouse
+Tests:
 
-- SQL файлы лежат в `deploy/clickhouse/init`.
-- Для обратной совместимости придерживайтесь add-first миграций.
+```bash
+go test ./cmd/... ./internal/...
+cd web && npm test -- --run
+```
 
-## Рекомендации по производительности
+Lint:
 
-1. Использовать rollup tables для дашбордов/графа.
-2. Использовать raw table только для drill-down.
-3. Ограничивать time windows в тяжёлых запросах.
+```bash
+golangci-lint run ./...
+cd web && npm run lint
+```
+
+Principles:
+- small, testable PRs
+- update docs with behavior changes
+- treat input/auth/config as security-sensitive by default

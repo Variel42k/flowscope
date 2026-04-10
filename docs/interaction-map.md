@@ -1,33 +1,27 @@
-# Interaction Map Behaviors
+﻿# Interaction Map Behavior / Поведение interaction map
 
-## Nodes
+## English
 
-Nodes can represent hosts, subnets, services, environments, or ASN groups depending on selected graph mode/grouping.
+Nodes represent hosts/subnets/services/environments/ASN groups depending on mode and grouping.
+Edges represent directional communication with bytes, packets, flows, protocols, ports, first/last seen.
 
-Each node carries:
+Main interactions:
+- click node -> highlight neighbors + node details
+- click edge -> edge details + matching flows
+- group/collapse by subnet/service/environment/asn
+- ego isolation via `node_id`
+- threshold filters via `min_bytes` and `min_flows`
+- export selected graph as JSON
 
-- label and type
-- bytes/packets in/out
-- flow count and last seen
-- tags (environment, service, country, ASN)
-- private/internal flags
-- `collapsed` + `children` metadata when grouped
+## Русский
 
-## Edges
+Узлы представляют хосты/подсети/сервисы/окружения/ASN группы в зависимости от режима.
+Рёбра отражают направленные взаимодействия и содержат bytes, packets, flows, protocols, ports, first/last seen.
 
-Edges represent observed directional communication and include:
-
-- source/destination
-- bytes, packets, flow count
-- protocol set and top destination ports
-- first/last seen
-- exporter count
-
-## Interaction Model
-
-- Click node: highlights ego neighborhood and requests node detail panel.
-- Click edge: opens edge detail panel with flow drill-down table.
-- Group/collapse: server-side grouping via `group_by` (subnet/service/environment/asn).
-- Ego isolate: send `node_id` query param to return neighborhood-only subgraph.
-- Threshold filtering: `min_bytes` and `min_flows` prune weak edges.
-- Export: selected nodes/edges can be exported as JSON from UI.
+Основные действия:
+- клик по узлу -> подсветка соседей + детали узла
+- клик по ребру -> детали ребра + matching flows
+- группировка/схлопывание по subnet/service/environment/asn
+- изоляция ego-сети через `node_id`
+- пороги через `min_bytes` и `min_flows`
+- экспорт выбранного подграфа в JSON

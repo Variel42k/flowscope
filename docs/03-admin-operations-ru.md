@@ -1,82 +1,57 @@
-# Руководство администратора и Runbook (RU)
+﻿# Admin Operations / Руководство администратора
 
-## Базовые операции
+## Русский
 
-Запуск:
+### Базовые команды
 
 ```powershell
 docker compose up --build -d
-```
-
-Статус:
-
-```powershell
 docker compose ps
-```
-
-Логи:
-
-```powershell
 docker compose logs -f --tail=200
-```
-
-Остановка:
-
-```powershell
 docker compose down
 ```
 
-Полная очистка:
+### Компоненты
 
-```powershell
-docker compose down -v
-```
+- `collector` — ingestion + normalization
+- `api` — REST + auth
+- `worker` — rollups
+- `flowgen` — synthetic flow generator
+- `seed` — demo dataset import
+- `clickhouse` — storage
+- `web` — frontend
 
-## Компоненты
+### Минимальный production checklist
 
-- `collector`: UDP ingestion и нормализация
-- `api`: REST endpoints и auth
-- `worker`: rollups/materialization
-- `flowgen`: фоновый синтетический трафик для демо
-- `seed`: импорт стартовых данных
-- `clickhouse`: хранение raw и rollup
-- `web`: UI
-
-## Health checks
-
-API:
-
-```powershell
-Invoke-RestMethod -Uri http://localhost:8088/api/health
-```
-
-Ожидаемо: `"status": "ok"`.
-
-## Повторный seed
-
-```powershell
-docker compose run --rm seed
-```
-
-## Обновление конфигурации
-
-1. Измените env values в `docker-compose.yml` или `.env`.
-2. Пересоздайте затронутые сервисы:
-
-```powershell
-docker compose up -d --build --force-recreate api collector worker web
-```
-
-## Полезные операционные проверки
-
-1. Убедиться, что worker регулярно обновляет rollups.
-2. Убедиться, что collector принимает UDP пакеты и вставляет raw flows.
-3. Проверить, что Web UI отображает новые данные.
-
-## Минимальный production checklist
-
-1. Заменить дефолтные креды и JWT secret.
-2. Ограничить exposed ports и доступ к ClickHouse.
+1. Сменить дефолтные креды и секреты.
+2. Ограничить внешние порты ClickHouse и UDP listeners.
 3. Включить TLS на ingress/reverse proxy.
-4. Выключить `FLOWSCOPE_AUTH_DISABLED`.
-5. Включить резервное копирование данных ClickHouse.
+4. Убедиться, что `FLOWSCOPE_AUTH_DISABLED=false`.
+
+## English
+
+### Basic commands
+
+```powershell
+docker compose up --build -d
+docker compose ps
+docker compose logs -f --tail=200
+docker compose down
+```
+
+### Components
+
+- `collector` — ingestion + normalization
+- `api` — REST + auth
+- `worker` — rollups
+- `flowgen` — synthetic flow generator
+- `seed` — demo dataset import
+- `clickhouse` — storage
+- `web` — frontend
+
+### Minimal production checklist
+
+1. Rotate default credentials and secrets.
+2. Restrict external exposure of ClickHouse and UDP listeners.
+3. Enable TLS at ingress/reverse proxy.
+4. Ensure `FLOWSCOPE_AUTH_DISABLED=false`.

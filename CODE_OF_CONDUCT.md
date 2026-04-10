@@ -1,27 +1,29 @@
-# Code of Conduct
+﻿# Code of Conduct / Кодекс поведения
 
-## Our Commitment
+## Русский
 
-We are committed to making participation in FlowScope respectful and inclusive for everyone.
+Мы поддерживаем уважительную и конструктивную коммуникацию.
 
-## Expected Behavior
+Ожидаемое поведение:
+- уважение к участникам
+- фокус на фактах и результате
+- полезная обратная связь
 
-- Be respectful and constructive.
-- Focus on facts and technical outcomes.
-- Give actionable feedback.
-- Assume good intent and ask clarifying questions.
+Недопустимо:
+- harassment/discrimination
+- личные оскорбления
+- публикация чувствительных данных без согласия
 
-## Unacceptable Behavior
+## English
 
-- Harassment or discrimination
-- Personal attacks
-- Deliberate disruption of collaboration
-- Publishing private/sensitive information without consent
+We are committed to respectful and constructive collaboration.
 
-## Enforcement
+Expected behavior:
+- respect for all participants
+- focus on facts and outcomes
+- actionable feedback
 
-Project maintainers may remove comments, lock discussions, or ban contributors for repeated or severe violations.
-
-## Reporting
-
-If you experience or witness unacceptable behavior, report it to maintainers privately.
+Unacceptable behavior:
+- harassment/discrimination
+- personal attacks
+- publishing sensitive data without consent

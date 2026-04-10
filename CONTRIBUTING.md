@@ -1,54 +1,39 @@
-# Contributing to FlowScope
+﻿# Contributing / Как вносить вклад
 
-Thanks for your interest in contributing.
+## Русский
 
-## Development Setup
+Спасибо за интерес к FlowScope.
 
-1. Clone the repository.
-2. Start dependencies:
+### Быстрый старт разработки
 
 ```bash
 docker compose up --build -d clickhouse seed
-```
-
-3. Run all services:
-
-```bash
 docker compose up --build -d
-```
-
-4. Run tests:
-
-```bash
 make test
 ```
 
-## Coding Standards
+### Правила PR
 
-- Go: keep code simple, explicit, and testable.
-- Frontend: TypeScript strictness, no `any` unless justified.
-- Prefer small focused changes over large mixed refactors.
-- Add tests for behavior changes.
-- Keep security in mind for all input paths and config defaults.
+1. Понятный заголовок и описание "что и зачем".
+2. Приложить результаты тестов.
+3. Обновить документацию при изменении поведения.
+4. Не добавлять секреты и приватные данные.
 
-## Pull Request Rules
+## English
 
-1. Use a descriptive PR title.
-2. Explain what changed and why.
-3. Include test evidence.
-4. Update docs if behavior/config changed.
-5. Do not include secrets or private data.
+Thanks for contributing to FlowScope.
 
-## Commit Style
+### Development quick start
 
-Use concise imperative commit messages, for example:
+```bash
+docker compose up --build -d clickhouse seed
+docker compose up --build -d
+make test
+```
 
-- `api: add max body size for inventory import`
-- `web: fix flow table pagination total`
-- `docs: add deployment runbook`
+### PR rules
 
-## Reporting Issues
-
-- Use GitHub Issues templates.
-- Include steps to reproduce and expected behavior.
-- For sensitive security issues, use [SECURITY.md](SECURITY.md).
+1. Clear title and explain what changed and why.
+2. Include test evidence.
+3. Update docs when behavior/config changes.
+4. Do not commit secrets or private data.

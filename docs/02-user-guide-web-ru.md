@@ -1,97 +1,41 @@
-# Руководство пользователя Web UI (RU)
+﻿# Web UI User Guide / Руководство пользователя Web UI
 
-## Навигация
+## Русский
 
-- `Overview` — сводка по трафику, топы, аномальные взаимодействия.
-- `Flows` — таблицы активных/исторических потоков с фильтрами и деталями.
-- `Sankey` — потоковая визуализация `source -> protocol/service -> destination`.
-- `Interaction Map` — интерактивный граф узлов и рёбер с drill-down.
+### Навигация
 
-## Общие фильтры
+- `Overview` — сводка по трафику, топы, аномальные взаимодействия
+- `Flows` — активные/исторические потоки + детали строки
+- `Sankey` — агрегированная визуализация `source -> protocol/service -> destination`
+- `Interaction Map` — интерактивный граф с drill-down
 
-Доступны на всех страницах:
+### Общие фильтры
 
-- `From` / `To` (временное окно)
-- `Search` (IP/hostname/service)
-- `Exporter`
-- `Protocol`
-- `Subnet`
-- `Source IP` / `Destination IP`
-- `Source Port` / `Destination Port`
-- `ASN`
-- `Country`
+`From`, `To`, `Search`, `Exporter`, `Protocol`, `Subnet`, `Source IP`, `Destination IP`, `Source Port`, `Destination Port`, `ASN`, `Country`.
 
-## Страница Overview
+### Рекомендуемый сценарий расследования
 
-Показывает:
+1. Открыть `Overview` и выделить аномальное направление.
+2. Перейти в `Interaction Map`, изолировать узел/ребро.
+3. Проверить `Edge Details`.
+4. Подтвердить события в `Matching Flows`.
 
-- Total Throughput
-- Total Flows
-- Active Exporters
-- Top Edges
-- Top Protocols/Top Talkers charts
-- Recent Suspicious Interactions
+## English
 
-Используйте её как отправную точку для расследования.
+### Navigation
 
-## Страница Flows
+- `Overview` — traffic summary, top lists, suspicious interactions
+- `Flows` — active/historical flow tables with row details
+- `Sankey` — aggregated `source -> protocol/service -> destination`
+- `Interaction Map` — interactive graph with drill-down
 
-Режимы:
+### Global filters
 
-- `Active Flows`
-- `Historical Flows`
+`From`, `To`, `Search`, `Exporter`, `Protocol`, `Subnet`, `Source IP`, `Destination IP`, `Source Port`, `Destination Port`, `ASN`, `Country`.
 
-Что можно делать:
+### Recommended investigation workflow
 
-1. Применить фильтры.
-2. Выбрать строку в таблице.
-3. Смотреть детали потока в правой панели:
-   - IP/port pair
-   - protocol
-   - bytes/packets
-   - exporter
-   - interfaces
-   - ASN/country
-
-## Страница Sankey
-
-Позволяет:
-
-1. Выбрать временное окно и фильтры.
-2. Кликнуть на “ленточную связь”.
-3. Получить таблицу matching flows снизу.
-
-Используйте для быстрого понимания “кто с кем и через что” в агрегированном виде.
-
-## Страница Interaction Map
-
-Основные функции:
-
-- zoom/pan
-- выбор `Graph Mode`:
-  - `host_to_host`
-  - `subnet_to_subnet`
-  - `service_to_service`
-  - `internal_to_external`
-- `Group / Collapse`:
-  - `none`
-  - `subnet`
-  - `service`
-  - `environment`
-  - `asn`
-- пороги `Min Bytes`, `Min Flows`
-- `Isolate Ego Node`
-- `Export JSON`
-
-Поведение:
-
-1. Клик по node — подсветка соседей + панель node details.
-2. Клик по edge — панель edge details + matching flows table.
-3. Кнопка `Expand Selected Group` — быстрый выход из группировки в конкретный узел.
-
-## Рекомендуемый workflow расследования
-
-1. `Overview` -> заметить аномалию/edge.
-2. `Interaction Map` -> изолировать узел или ребро.
-3. `Edge Details` -> проверить порты/протоколы/экспортёры.
-4. `Matching Flows` -> подтверждение на уровне raw flow events.
+1. Start at `Overview` and identify unusual edges.
+2. Open `Interaction Map` and isolate node/edge context.
+3. Inspect `Edge Details`.
+4. Confirm with `Matching Flows` raw entries.

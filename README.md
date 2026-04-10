@@ -2,173 +2,87 @@
 
 [![License: AGPL v3+](https://img.shields.io/badge/license-AGPLv3%2B-blue.svg)](LICENSE)
 
-FlowScope is an open-source, self-hosted **network flow observability platform** for defensive monitoring teams.
-
-It ingests **NetFlow v5/v9, IPFIX, and sFlow**, stores normalized telemetry in ClickHouse, and provides a fast web UI for:
-
-- top talkers, protocols, interfaces, and exporters
-- active and historical flow exploration
-- Sankey traffic analysis
-- interactive node-edge interaction map with drill-down
-- suspicious interaction heuristics (observability context)
+FlowScope is an open-source, self-hosted **network flow observability platform** for defensive monitoring teams.  
+FlowScope — open-source self-hosted платформа наблюдаемости сетевых потоков для defensive monitoring.
 
 License: **AGPL-3.0-or-later** (SPDX)
 
-## Развёртывание (Docker Compose)
+## Deployment / Развёртывание
 
-Ниже минимальная инструкция запуска, которая должна быть видна сразу на главной странице GitHub.
+### Русский
 
-### 1. Требования
-
+1. Требования:
 - Docker + Docker Compose v2
 - свободные порты: `5173`, `8088`, `18123`, `19000`, `2055/udp`, `2056/udp`, `4739/udp`, `6343/udp`
 
-### 2. Запуск
+2. Запуск:
 
 ```bash
 docker compose up --build -d
 ```
 
-### 3. Проверка
+3. Проверка:
 
 ```bash
 docker compose ps
-```
-
-Ожидаемо:
-
-- `clickhouse` в состоянии `healthy`
-- `api`, `collector`, `worker`, `flowgen`, `web` в состоянии `Up`
-- `seed` завершился с `Exited (0)`
-
-### 4. Вход в Web UI
-
-- Web: `http://localhost:5173`
-- API: `http://localhost:8088`
-- логин по умолчанию:
-  - username: `admin`
-  - password: `admin123`
-
-Проверка API health:
-
-```bash
 curl http://localhost:8088/api/health
 ```
 
-### 5. Остановка
+4. Вход:
+- Web: `http://localhost:5173`
+- API: `http://localhost:8088`
+- demo login: `admin` / `admin123`
+
+5. Остановка:
 
 ```bash
 docker compose down
-```
-
-С очисткой томов:
-
-```bash
+# с очисткой данных:
 docker compose down -v
 ```
 
-## Defensive-Only Scope
+### English
 
-FlowScope is built for observability and blue-team operations only.
-It does **not** implement offensive capabilities like scanning, packet injection, exploitation, persistence, credential theft, or remote access tooling.
+1. Requirements:
+- Docker + Docker Compose v2
+- open ports: `5173`, `8088`, `18123`, `19000`, `2055/udp`, `2056/udp`, `4739/udp`, `6343/udp`
 
-## Why FlowScope
-
-- Unified ingestion pipeline for multiple flow protocols
-- Rollup-first querying strategy for responsive dashboards/graph views
-- Deep drill-down path: Overview -> Node/Edge -> Flows
-- Docker Compose friendly for local and small production deployments
-- Clean Go + React monorepo, easy to extend
-
-## Core Capabilities
-
-1. UDP ingestion of NetFlow v5/v9, IPFIX, sFlow
-2. Canonical flow normalization and optional enrichment
-3. ClickHouse raw + rollup schema for recent and historical analysis
-4. REST API for dashboards, map graph, search, and drill-down
-5. Web UI with ECharts, TanStack Table, Cytoscape.js interaction map
-
-## Stack
-
-- Backend services: Go
-- API: REST (`chi`)
-- Storage: ClickHouse
-- Frontend: React + TypeScript + Vite + Tailwind
-- Charts: Apache ECharts
-- Graph: Cytoscape.js
-- Tables: TanStack Table
-- Deployment: Docker Compose
-
-## Repository Layout
-
-```text
-flowscope/
-  cmd/
-    api/
-    collector/
-    worker/
-    seed/
-    flowgen/
-  internal/
-    api/
-    auth/
-    config/
-    decoder/
-    enrich/
-    graph/
-    inventory/
-    model/
-    normalize/
-    rollup/
-    storage/
-    util/
-  deploy/
-    clickhouse/init/
-    docker/
-    flowgen/
-    seed/
-  web/
-  docs/
-```
-
-## Quick Start (EN)
+2. Start:
 
 ```bash
 docker compose up --build -d
 ```
 
-Service endpoints:
-
-- Web UI: `http://localhost:5173`
-- API: `http://localhost:8088`
-- ClickHouse HTTP: `http://localhost:18123`
-- ClickHouse native: `localhost:19000`
-
-Flow listeners:
-
-- NetFlow v5: `localhost:2055/udp`
-- NetFlow v9: `localhost:2056/udp`
-- IPFIX: `localhost:4739/udp`
-- sFlow: `localhost:6343/udp`
-
-Default local demo credentials:
-
-- username: `admin`
-- password: `admin123`
-
-Logs:
+3. Verify:
 
 ```bash
-docker compose logs -f --tail=200
+docker compose ps
+curl http://localhost:8088/api/health
 ```
 
-Stop and cleanup:
+4. Access:
+- Web: `http://localhost:5173`
+- API: `http://localhost:8088`
+- demo login: `admin` / `admin123`
+
+5. Stop:
 
 ```bash
+docker compose down
+# wipe volumes:
 docker compose down -v
 ```
 
-## API Surface (MVP)
+## Core Features / Основные возможности
+
+- NetFlow v5/v9, IPFIX, sFlow ingestion
+- canonical flow normalization + optional enrichment
+- ClickHouse raw + rollup analytics
+- dashboards (talkers/protocols/interfaces/exporters)
+- Sankey traffic view
+- interaction map with node/edge drill-down
+
+## API (MVP)
 
 - `POST /api/auth/login`
 - `GET /api/health`
@@ -186,30 +100,32 @@ docker compose down -v
 - `GET /api/search`
 - `POST /api/inventory/import`
 
-List/query endpoints support time range, filtering, pagination, and sorting.
+## Documentation / Документация
 
-## Documentation
+- [Docs index](docs/index.md)
+- [Quick start](docs/01-quickstart-ru.md)
+- [Web UI user guide](docs/02-user-guide-web-ru.md)
+- [Admin operations](docs/03-admin-operations-ru.md)
+- [API reference](docs/04-api-reference-ru.md)
+- [Configuration reference](docs/05-configuration-reference-ru.md)
+- [Troubleshooting](docs/06-troubleshooting-ru.md)
+- [Security and hardening](docs/07-security-and-hardening-ru.md)
+- [Backup and restore](docs/08-backup-restore-ru.md)
+- [Development guide](docs/09-development-ru.md)
+- [Licensing](docs/10-licensing-ru.md)
+- [Architecture](docs/architecture.md)
+- [Interaction map behavior](docs/interaction-map.md)
+- [GitHub presentation kit](docs/github-presentation-ru.md)
 
-- [Documentation index](docs/index.md)
-- [Quick start (RU)](docs/01-quickstart-ru.md)
-- [Architecture notes (EN)](docs/architecture.md)
-- [Архитектура (RU)](docs/architecture-ru.md)
-- [Interaction map details (EN)](docs/interaction-map.md)
-- [Карта взаимодействий (RU)](docs/interaction-map-ru.md)
-- [GitHub presentation kit (RU)](docs/github-presentation-ru.md)
-- [Licensing guide (RU)](docs/10-licensing-ru.md)
+## Security / Безопасность
 
-## Security Notes
+Before production usage: rotate credentials/secrets, restrict exposed ports, and apply [SECURITY.md](SECURITY.md).  
+Перед production: смените креды/секреты, ограничьте внешние порты и следуйте [SECURITY.md](SECURITY.md).
 
-For local demos, defaults are intentionally simple.
-Before production use, rotate credentials/secrets, restrict exposed ports, and apply hardening from [SECURITY.md](SECURITY.md).
+## Contributing / Вклад
 
-## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
+## License / Лицензия
 
-## License
-
-This project is licensed under **GNU AGPL v3.0 or later**.  
-SPDX identifier: `AGPL-3.0-or-later`  
-See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+GNU AGPL v3.0 or later (`AGPL-3.0-or-later`). See [LICENSE](LICENSE) and [NOTICE](NOTICE).
