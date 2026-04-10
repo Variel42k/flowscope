@@ -15,6 +15,10 @@
 9. [Руководство разработчика](./09-development-ru.md)
 10. [GitHub presentation kit](./github-presentation-ru.md)
 11. [Лицензирование](./10-licensing-ru.md)
+12. [Архитектура (RU)](./architecture-ru.md)
+13. [Карта взаимодействий (RU)](./interaction-map-ru.md)
+14. [Architecture notes (EN)](./architecture.md)
+15. [Interaction map details (EN)](./interaction-map.md)
 
 ## Для кого это
 

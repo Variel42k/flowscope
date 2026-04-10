@@ -1,4 +1,4 @@
-# FlowScope
+﻿# FlowScope
 
 [![License: AGPL v3+](https://img.shields.io/badge/license-AGPLv3%2B-blue.svg)](LICENSE)
 
@@ -13,6 +13,59 @@ It ingests **NetFlow v5/v9, IPFIX, and sFlow**, stores normalized telemetry in C
 - suspicious interaction heuristics (observability context)
 
 License: **AGPL-3.0-or-later** (SPDX)
+
+## Развёртывание (Docker Compose)
+
+Ниже минимальная инструкция запуска, которая должна быть видна сразу на главной странице GitHub.
+
+### 1. Требования
+
+- Docker + Docker Compose v2
+- свободные порты: `5173`, `8088`, `18123`, `19000`, `2055/udp`, `2056/udp`, `4739/udp`, `6343/udp`
+
+### 2. Запуск
+
+```bash
+docker compose up --build -d
+```
+
+### 3. Проверка
+
+```bash
+docker compose ps
+```
+
+Ожидаемо:
+
+- `clickhouse` в состоянии `healthy`
+- `api`, `collector`, `worker`, `flowgen`, `web` в состоянии `Up`
+- `seed` завершился с `Exited (0)`
+
+### 4. Вход в Web UI
+
+- Web: `http://localhost:5173`
+- API: `http://localhost:8088`
+- логин по умолчанию:
+  - username: `admin`
+  - password: `admin123`
+
+Проверка API health:
+
+```bash
+curl http://localhost:8088/api/health
+```
+
+### 5. Остановка
+
+```bash
+docker compose down
+```
+
+С очисткой томов:
+
+```bash
+docker compose down -v
+```
 
 ## Defensive-Only Scope
 
@@ -78,7 +131,7 @@ flowscope/
   docs/
 ```
 
-## Quick Start
+## Quick Start (EN)
 
 ```bash
 docker compose up --build -d
@@ -139,8 +192,10 @@ List/query endpoints support time range, filtering, pagination, and sorting.
 
 - [Documentation index](docs/index.md)
 - [Quick start (RU)](docs/01-quickstart-ru.md)
-- [Architecture notes](docs/architecture.md)
-- [Interaction map details](docs/interaction-map.md)
+- [Architecture notes (EN)](docs/architecture.md)
+- [Архитектура (RU)](docs/architecture-ru.md)
+- [Interaction map details (EN)](docs/interaction-map.md)
+- [Карта взаимодействий (RU)](docs/interaction-map-ru.md)
 - [GitHub presentation kit (RU)](docs/github-presentation-ru.md)
 - [Licensing guide (RU)](docs/10-licensing-ru.md)
 
