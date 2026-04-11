@@ -23,6 +23,19 @@ FlowScope превращает телеметрию экспортеров в п
 - RBAC (`admin` / `viewer`) and optional OIDC SSO
 - heuristic alerting rules/events and reusable saved views
 
+## Capability Card / Карточка возможностей
+
+| Capability | Status | Details |
+|---|---|---|
+| Flow ingestion (NetFlow/IPFIX/sFlow) | Ready | Multi-exporter UDP collection |
+| Historical analytics (ClickHouse + rollups) | Ready | Raw + `1m/1h` query paths |
+| Interaction map + drill-down | Ready | Node/edge details, ego isolate, grouping |
+| Alert rules and events | Ready | Heuristic detections + manual evaluation |
+| OIDC SSO | Beta | Optional via environment configuration |
+| Multi-tenant isolation | Roadmap | Planned, not implemented |
+
+Full matrix / Полная матрица: [docs/capability-matrix.md](docs/capability-matrix.md)
+
 ## Architecture / Архитектура
 
 ```mermaid
@@ -171,6 +184,7 @@ docs/          architecture, operations, API, security, runbooks
 - [Licensing](docs/10-licensing-ru.md)
 - [Architecture notes](docs/architecture.md)
 - [Interaction map behavior](docs/interaction-map.md)
+- [Capability matrix](docs/capability-matrix.md)
 - [GitHub presentation kit](docs/github-presentation-ru.md)
 
 ## Contributing
