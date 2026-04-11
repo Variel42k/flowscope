@@ -1,4 +1,4 @@
-import cytoscape, { Core } from 'cytoscape'
+import cytoscape, { Core, EdgeSingular, NodeSingular } from 'cytoscape'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
 
@@ -25,6 +25,11 @@ const GROUPS = [
   { value: 'asn', label: 'Group by ASN' },
 ]
 
+type SelectedNodeMeta = {
+  collapsed: boolean
+  children: string[]
+}
+
 export function MapPage() {
   const { filters, setFilters, params } = useGlobalFilters()
   const [mode, setMode] = useState('host_to_host')
@@ -37,7 +42,7 @@ export function MapPage() {
   const [edgeDetails, setEdgeDetails] = useState<EdgeDetails | null>(null)
   const [selectedNodes, setSelectedNodes] = useState<string[]>([])
   const [selectedEdges, setSelectedEdges] = useState<string[]>([])
-  const [selectedNodeMeta, setSelectedNodeMeta] = useState<any | null>(null)
+  const [selectedNodeMeta, setSelectedNodeMeta] = useState<SelectedNodeMeta | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
@@ -100,60 +105,60 @@ export function MapPage() {
       cyRef.current.destroy()
       cyRef.current = null
     }
-    const cyStyle: any = [
-        {
-          selector: 'node',
-          style: {
-            'background-color': (ele: any) => {
-              const internal = Boolean(ele.data('internal'))
-              const privateNode = Boolean(ele.data('private'))
-              if (internal && privateNode) return '#22c55e'
-              if (internal) return '#10b981'
-              if (privateNode) return '#f59e0b'
-              return '#0ea5e9'
-            },
-            'border-color': '#f8fafc',
-            'border-width': (ele: any) => (ele.data('collapsed') ? 3 : 1),
-            width: (ele: any) => Math.max(20, Math.min(80, 16 + Math.log10((ele.data('flowCount') || 1) + 1) * 12)),
-            height: (ele: any) => Math.max(20, Math.min(80, 16 + Math.log10((ele.data('flowCount') || 1) + 1) * 12)),
-            label: 'data(label)',
-            'font-size': 10,
-            color: '#e2e8f0',
-            'text-wrap': 'wrap',
-            'text-max-width': 120,
+    const cyStyle = [
+      {
+        selector: 'node',
+        style: {
+          'background-color': (ele: NodeSingular) => {
+            const internal = toBool(ele.data('internal'))
+            const privateNode = toBool(ele.data('private'))
+            if (internal && privateNode) return '#22c55e'
+            if (internal) return '#10b981'
+            if (privateNode) return '#f59e0b'
+            return '#0ea5e9'
           },
+          'border-color': '#f8fafc',
+          'border-width': (ele: NodeSingular) => (toBool(ele.data('collapsed')) ? 3 : 1),
+          width: (ele: NodeSingular) => scaleNodeSize(ele),
+          height: (ele: NodeSingular) => scaleNodeSize(ele),
+          label: 'data(label)',
+          'font-size': 10,
+          color: '#e2e8f0',
+          'text-wrap': 'wrap',
+          'text-max-width': 120,
         },
-        {
-          selector: 'edge',
-          style: {
-            width: (ele: any) => Math.max(1, Math.min(12, Math.log10((ele.data('bytes') || 1) + 1))),
-            'line-color': '#38bdf8',
-            'target-arrow-color': '#38bdf8',
-            'target-arrow-shape': 'triangle',
-            'curve-style': 'bezier',
-            opacity: 0.7,
-          },
+      },
+      {
+        selector: 'edge',
+        style: {
+          width: (ele: EdgeSingular) => Math.max(1, Math.min(12, Math.log10(nodeDataNumber(ele, 'bytes') + 1))),
+          'line-color': '#38bdf8',
+          'target-arrow-color': '#38bdf8',
+          'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier',
+          opacity: 0.7,
         },
-        {
-          selector: '.faded',
-          style: {
-            opacity: 0.1,
-          },
+      },
+      {
+        selector: '.faded',
+        style: {
+          opacity: 0.1,
         },
-        {
-          selector: '.highlight',
-          style: {
-            opacity: 1,
-            'line-color': '#f97316',
-            'target-arrow-color': '#f97316',
-            'background-color': '#f97316',
-          },
+      },
+      {
+        selector: '.highlight',
+        style: {
+          opacity: 1,
+          'line-color': '#f97316',
+          'target-arrow-color': '#f97316',
+          'background-color': '#f97316',
         },
-      ]
+      },
+    ]
     const cy = cytoscape({
       container: containerRef.current,
       elements,
-      style: cyStyle,
+      style: cyStyle as unknown as cytoscape.StylesheetJson,
       layout: {
         name: 'cose',
         animate: false,
@@ -161,10 +166,13 @@ export function MapPage() {
       },
     })
 
-    cy.on('tap', 'node', async (evt: any) => {
-      const node = evt.target
+    cy.on('tap', 'node', async (evt: cytoscape.EventObject) => {
+      const node = evt.target as NodeSingular
       const id = String(node.id())
-      setSelectedNodeMeta(node.data())
+      setSelectedNodeMeta({
+        collapsed: toBool(node.data('collapsed')),
+        children: toStringArray(node.data('children')),
+      })
       setEdgeDetails(null)
       setSelectedNodes([id])
       cy.elements().addClass('faded').removeClass('highlight')
@@ -176,8 +184,8 @@ export function MapPage() {
       setNodeDetails(data)
     })
 
-    cy.on('tap', 'edge', async (evt: any) => {
-      const edge = evt.target
+    cy.on('tap', 'edge', async (evt: cytoscape.EventObject) => {
+      const edge = evt.target as EdgeSingular
       const id = String(edge.id())
       setNodeDetails(null)
       setSelectedEdges([id])
@@ -192,7 +200,7 @@ export function MapPage() {
       setEdgeDetails(data)
     })
 
-    cy.on('tap', (evt) => {
+    cy.on('tap', (evt: cytoscape.EventObject) => {
       if (evt.target === cy) {
         cy.elements().removeClass('faded highlight')
       }
@@ -307,7 +315,7 @@ export function MapPage() {
                 className="secondary mb-2"
                 onClick={() => {
                   setGroupBy('none')
-                  const firstChild = selectedNodeMeta.children?.[0]
+                  const firstChild = selectedNodeMeta.children[0]
                   if (firstChild) setEgoNode(firstChild)
                 }}
               >
@@ -362,4 +370,32 @@ function Metric({ label, value, mono = false }: { label: string; value: string; 
       <div className={mono ? 'value break-all' : 'break-all text-slate-200'}>{value}</div>
     </div>
   )
+}
+
+function toBool(value: unknown): boolean {
+  return value === true
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.map((item) => String(item))
+}
+
+function nodeDataNumber(ele: NodeSingular | EdgeSingular, key: string): number {
+  const value = ele.data(key)
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+  return 0
+}
+
+function scaleNodeSize(ele: NodeSingular): number {
+  const flowCount = nodeDataNumber(ele, 'flowCount')
+  return Math.max(20, Math.min(80, 16 + Math.log10(flowCount + 1) * 12))
 }

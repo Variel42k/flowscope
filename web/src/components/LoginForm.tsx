@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 
 import { login, startOIDCLogin } from '../api/client'
+import { getErrorMessage } from '../lib/http'
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [username, setUsername] = useState('admin')
@@ -16,8 +17,8 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     try {
       await login(username, password)
       onSuccess()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -50,8 +51,8 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
               setLoading(true)
               try {
                 await startOIDCLogin()
-              } catch (err: any) {
-                setError(err?.response?.data?.error ?? err.message)
+              } catch (err: unknown) {
+                setError(getErrorMessage(err))
                 setLoading(false)
               }
             }}

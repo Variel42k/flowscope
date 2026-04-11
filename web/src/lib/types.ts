@@ -48,6 +48,17 @@ export type PageResult<T> = {
   sort_dir: string
 }
 
+export type Exporter = {
+  exporter_id: string
+  exporter_ip: string
+  exporter_name: string
+  observation_domain: number
+  first_seen: string
+  last_seen: string
+  flows_observed: number
+  last_source_type: string
+}
+
 export type TopItem = {
   key: string
   bytes: number

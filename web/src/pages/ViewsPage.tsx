@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { apiClient, getCurrentRole, getCurrentUser } from '../api/client'
+import { getErrorMessage } from '../lib/http'
 import { SavedView } from '../lib/types'
 
 export function ViewsPage() {
@@ -11,29 +12,29 @@ export function ViewsPage() {
   const role = getCurrentRole()
   const isAdmin = role.toLowerCase() === 'admin'
 
-  async function load() {
+  const load = useCallback(async () => {
     try {
       setError('')
       const q = new URLSearchParams()
       if (scope) q.set('scope', scope)
       const { data } = await apiClient.get<{ data: SavedView[] }>('/api/views?' + q.toString())
       setViews(data.data ?? [])
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     }
-  }
+  }, [scope])
 
   useEffect(() => {
-    load().catch(() => {})
-  }, [scope])
+    void load()
+  }, [load])
 
   async function deleteView(viewID: string) {
     try {
       setError('')
       await apiClient.delete(`/api/views/${encodeURIComponent(viewID)}`)
       await load()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     }
   }
 

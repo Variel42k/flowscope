@@ -7,7 +7,25 @@ import { FlowTable } from '../components/FlowTable'
 import { SavedViewsPanel } from '../components/SavedViewsPanel'
 import { useGlobalFilters } from '../hooks/useFilters'
 import { formatBytes, formatNumber } from '../lib/format'
-import { FlowRecord, SankeyResponse } from '../lib/types'
+import { FlowRecord, PageResult, SankeyResponse } from '../lib/types'
+
+type SankeyTooltipData = {
+  source?: string
+  target?: string
+  value?: number
+  flows?: number
+}
+
+type SankeyTooltipParam = {
+  dataType?: string
+  data?: SankeyTooltipData
+  name?: string
+}
+
+type SankeyClickEvent = {
+  dataType?: string
+  data?: SankeyTooltipData
+}
 
 export function SankeyPage() {
   const { filters, setFilters, params } = useGlobalFilters()
@@ -29,11 +47,15 @@ export function SankeyPage() {
     () => ({
       tooltip: {
         trigger: 'item',
-        formatter: (p: any) => {
+        formatter: (p: SankeyTooltipParam) => {
           if (p.dataType === 'edge') {
-            return `${p.data.source} -> ${p.data.target}<br/>${formatBytes(p.data.value)} / ${formatNumber(p.data.flows)} flows`
+            const source = p.data?.source ?? 'unknown'
+            const target = p.data?.target ?? 'unknown'
+            const value = typeof p.data?.value === 'number' ? p.data.value : 0
+            const flows = typeof p.data?.flows === 'number' ? p.data.flows : 0
+            return `${source} -> ${target}<br/>${formatBytes(value)} / ${formatNumber(flows)} flows`
           }
-          return p.name
+          return p.name ?? ''
         },
       },
       series: [
@@ -51,18 +73,19 @@ export function SankeyPage() {
   )
 
   const onEvents = {
-    click: async (event: any) => {
+    click: async (event: SankeyClickEvent) => {
       if (event.dataType !== 'edge') return
-      const src = event.data.source as string
-      const dst = event.data.target as string
+      const src = event.data?.source
+      const dst = event.data?.target
+      if (!src || !dst) return
       setSelection(`${src} -> ${dst}`)
       const q = new URLSearchParams(params)
       q.set('search', src)
       q.set('page_size', '30')
       q.set('sort_by', 'bytes')
       q.set('sort_dir', 'DESC')
-      const { data } = await apiClient.get('/api/flows/historical?' + q.toString())
-      const filtered = (data.data as FlowRecord[]).filter((f) => {
+      const { data } = await apiClient.get<PageResult<FlowRecord>>('/api/flows/historical?' + q.toString())
+      const filtered = data.data.filter((f) => {
         const fields = [f.src_ip, f.dst_ip, f.src_hostname, f.dst_hostname, f.src_service, f.dst_service].filter(Boolean)
         return fields.some((x) => x?.includes(src) || x?.includes(dst))
       })

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { apiClient, getCurrentRole } from '../api/client'
 import { formatBytes, formatNumber } from '../lib/format'
+import { getErrorMessage } from '../lib/http'
 import { AlertEvent, AlertRule, PageResult } from '../lib/types'
 
 const RULE_TYPES: Array<AlertRule['rule_type']> = ['new_edge', 'fanout_external', 'high_byte_edge', 'port_outlier']
@@ -22,7 +23,7 @@ export function AlertsPage() {
   const [loading, setLoading] = useState(false)
   const [severityFilter, setSeverityFilter] = useState('')
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     const q = new URLSearchParams({ page: '1', page_size: '100' })
     if (severityFilter) q.set('severity', severityFilter)
     const [rulesRes, eventsRes] = await Promise.all([
@@ -31,11 +32,11 @@ export function AlertsPage() {
     ])
     setRules(rulesRes.data.data ?? [])
     setEvents(eventsRes.data)
-  }
+  }, [severityFilter])
 
   useEffect(() => {
-    refresh().catch(() => {})
-  }, [severityFilter])
+    void refresh()
+  }, [refresh])
 
   const selectedRule = useMemo(() => rules.find((r) => r.rule_id === editingID) ?? null, [rules, editingID])
 
@@ -79,8 +80,8 @@ export function AlertsPage() {
       }
       clearForm()
       await refresh()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -94,8 +95,8 @@ export function AlertsPage() {
       await apiClient.delete(`/api/alerts/rules/${encodeURIComponent(ruleID)}`)
       if (editingID === ruleID) clearForm()
       await refresh()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -107,8 +108,8 @@ export function AlertsPage() {
     try {
       await apiClient.post('/api/alerts/evaluate')
       await refresh()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -163,7 +164,7 @@ export function AlertsPage() {
             {editingID ? 'Update Rule' : 'Create Rule'}
           </button>
           <button className="secondary" onClick={clearForm}>Clear</button>
-          {!isAdmin && <span className="text-xs text-slate-400">Rule CRUD доступен только admin роли.</span>}
+          {!isAdmin && <span className="text-xs text-slate-400">Rule CRUD is available for admin role only.</span>}
         </div>
         {error && <div className="rounded border border-red-500/50 bg-red-950/20 p-2 text-sm text-red-300">{error}</div>}
         <div className="overflow-x-auto">

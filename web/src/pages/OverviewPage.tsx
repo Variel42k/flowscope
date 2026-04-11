@@ -7,7 +7,7 @@ import { KpiCard } from '../components/KpiCard'
 import { SavedViewsPanel } from '../components/SavedViewsPanel'
 import { useGlobalFilters } from '../hooks/useFilters'
 import { formatBytes, formatNumber } from '../lib/format'
-import { GraphResponse, TopItem } from '../lib/types'
+import { Exporter, GraphResponse, PageResult, TopItem } from '../lib/types'
 
 export function OverviewPage() {
   const { filters, setFilters, params } = useGlobalFilters()
@@ -15,7 +15,7 @@ export function OverviewPage() {
   const [protocols, setProtocols] = useState<TopItem[]>([])
   const [ports, setPorts] = useState<TopItem[]>([])
   const [interfaces, setInterfaces] = useState<TopItem[]>([])
-  const [exporters, setExporters] = useState<any[]>([])
+  const [exporters, setExporters] = useState<Exporter[]>([])
   const [graph, setGraph] = useState<GraphResponse | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -27,7 +27,7 @@ export function OverviewPage() {
       apiClient.get('/api/protocols/top?' + params.toString()),
       apiClient.get('/api/ports/top?' + params.toString()),
       apiClient.get('/api/interfaces/top?' + params.toString()),
-      apiClient.get('/api/exporters?' + params.toString()),
+      apiClient.get<PageResult<Exporter>>('/api/exporters?' + params.toString()),
       apiClient.get('/api/map/graph?' + new URLSearchParams({ ...Object.fromEntries(params), mode: 'host_to_host' }).toString()),
     ])
       .then(([t, p, pt, i, e, g]) => {

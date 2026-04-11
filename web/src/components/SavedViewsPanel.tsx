@@ -1,7 +1,8 @@
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { apiClient, getCurrentRole, getCurrentUser } from '../api/client'
 import { GlobalFilters, makeDefaultFilters, normalizeSavedFilters } from '../hooks/useFilters'
+import { getErrorMessage } from '../lib/http'
 import { SavedView } from '../lib/types'
 
 type Props = {
@@ -24,15 +25,15 @@ export function SavedViewsPanel({ scope, filters, setFilters }: Props) {
 
   const selected = useMemo(() => views.find((v) => v.view_id === selectedID) ?? null, [views, selectedID])
 
-  async function loadViews() {
+  const loadViews = useCallback(async () => {
     const q = new URLSearchParams({ scope })
     const { data } = await apiClient.get<{ data: SavedView[] }>('/api/views?' + q.toString())
     setViews(data.data ?? [])
-  }
+  }, [scope])
 
   useEffect(() => {
-    loadViews().catch(() => {})
-  }, [scope])
+    void loadViews()
+  }, [loadViews])
 
   useEffect(() => {
     if (!selected) return
@@ -65,8 +66,8 @@ export function SavedViewsPanel({ scope, filters, setFilters }: Props) {
       setDescription('')
       setIsShared(false)
       await loadViews()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -85,8 +86,8 @@ export function SavedViewsPanel({ scope, filters, setFilters }: Props) {
         filters,
       })
       await loadViews()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -100,8 +101,8 @@ export function SavedViewsPanel({ scope, filters, setFilters }: Props) {
       await apiClient.delete(`/api/views/${encodeURIComponent(selected.view_id)}`)
       setSelectedID('')
       await loadViews()
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
