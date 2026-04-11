@@ -17,6 +17,8 @@ func (r *Repository) ApplyRetention(ctx context.Context, days int) error {
 		fmt.Sprintf("ALTER TABLE edges_1m MODIFY TTL minute_bucket + INTERVAL %d DAY", days),
 		fmt.Sprintf("ALTER TABLE flow_1h_rollup MODIFY TTL hour_bucket + INTERVAL %d DAY", hourDays),
 		fmt.Sprintf("ALTER TABLE edges_1h MODIFY TTL hour_bucket + INTERVAL %d DAY", hourDays),
+		fmt.Sprintf("ALTER TABLE alert_events MODIFY TTL detected_at + INTERVAL %d DAY", hourDays),
+		fmt.Sprintf("ALTER TABLE saved_views MODIFY TTL updated_at + INTERVAL %d DAY", hourDays),
 	}
 	for _, q := range queries {
 		if _, err := r.db.ExecContext(ctx, q); err != nil {

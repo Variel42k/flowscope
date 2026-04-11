@@ -4,6 +4,7 @@ import ReactECharts from 'echarts-for-react'
 import { apiClient } from '../api/client'
 import { FilterBar } from '../components/FilterBar'
 import { FlowTable } from '../components/FlowTable'
+import { SavedViewsPanel } from '../components/SavedViewsPanel'
 import { useGlobalFilters } from '../hooks/useFilters'
 import { formatBytes, formatNumber } from '../lib/format'
 import { FlowRecord, SankeyResponse } from '../lib/types'
@@ -72,6 +73,7 @@ export function SankeyPage() {
   return (
     <div className="space-y-4">
       <FilterBar filters={filters} setFilters={setFilters} compact />
+      <SavedViewsPanel scope="sankey" filters={filters} setFilters={setFilters} />
       <div className="panel p-3">
         <h2 className="mb-2 text-sm font-semibold">Traffic Sankey</h2>
         <p className="mb-2 text-xs text-slate-400">Source - protocol/service - destination. Click a band to drill into matching flows.</p>

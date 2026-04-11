@@ -32,6 +32,7 @@ curl http://localhost:8088/api/health
 - Web: `http://localhost:5173`
 - API: `http://localhost:8088`
 - demo login: `admin` / `admin123`
+- optional OIDC: set `FLOWSCOPE_OIDC_ENABLED=true` and OIDC env vars in `.env`, then rebuild web/api
 
 5. Остановка:
 
@@ -64,6 +65,7 @@ curl http://localhost:8088/api/health
 - Web: `http://localhost:5173`
 - API: `http://localhost:8088`
 - demo login: `admin` / `admin123`
+- optional OIDC: set `FLOWSCOPE_OIDC_ENABLED=true` and related OIDC env vars in `.env`, then rebuild web/api
 
 5. Stop:
 
@@ -79,12 +81,18 @@ docker compose down -v
 - canonical flow normalization + optional enrichment
 - ClickHouse raw + rollup analytics
 - dashboards (talkers/protocols/interfaces/exporters)
+- top destination ports analytics + port distribution charts
 - Sankey traffic view
 - interaction map with node/edge drill-down
+- RBAC (`admin` / `viewer`) + optional OIDC SSO
+- alert rules/events (heuristics) + saved views (filter presets)
 
 ## API (MVP)
 
 - `POST /api/auth/login`
+- `GET /api/auth/oidc/start`
+- `GET /api/auth/oidc/callback`
+- `GET /api/auth/me`
 - `GET /api/health`
 - `GET /api/exporters`
 - `GET /api/flows/active`
@@ -93,11 +101,22 @@ docker compose down -v
 - `GET /api/talkers/top`
 - `GET /api/protocols/top`
 - `GET /api/interfaces/top`
+- `GET /api/ports/top`
 - `GET /api/sankey`
 - `GET /api/map/graph`
 - `GET /api/map/node/:id`
 - `GET /api/map/edge/:id`
 - `GET /api/search`
+- `GET /api/alerts/rules`
+- `POST /api/alerts/rules`
+- `PUT /api/alerts/rules/:id`
+- `DELETE /api/alerts/rules/:id`
+- `GET /api/alerts/events`
+- `POST /api/alerts/evaluate`
+- `GET /api/views`
+- `POST /api/views`
+- `PUT /api/views/:id`
+- `DELETE /api/views/:id`
 - `POST /api/inventory/import`
 
 ## Documentation / Документация

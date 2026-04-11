@@ -1,9 +1,11 @@
 import cytoscape, { Core } from 'cytoscape'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import ReactECharts from 'echarts-for-react'
 
 import { apiClient } from '../api/client'
 import { FilterBar } from '../components/FilterBar'
 import { FlowTable } from '../components/FlowTable'
+import { SavedViewsPanel } from '../components/SavedViewsPanel'
 import { useGlobalFilters } from '../hooks/useFilters'
 import { formatBytes, formatNumber } from '../lib/format'
 import { EdgeDetails, GraphResponse, NodeDetails } from '../lib/types'
@@ -223,9 +225,21 @@ export function MapPage() {
     URL.revokeObjectURL(url)
   }
 
+  const edgePortChart = useMemo(
+    () => ({
+      tooltip: { trigger: 'axis' },
+      xAxis: { type: 'category', data: (edgeDetails?.port_distribution ?? []).slice(0, 10).map((p) => p.key) },
+      yAxis: { type: 'value' },
+      series: [{ type: 'bar', data: (edgeDetails?.port_distribution ?? []).slice(0, 10).map((p) => p.bytes), itemStyle: { color: '#f59e0b' } }],
+      grid: { top: 20, left: 40, right: 10, bottom: 40 },
+    }),
+    [edgeDetails],
+  )
+
   return (
     <div className="space-y-4">
       <FilterBar filters={filters} setFilters={setFilters} compact />
+      <SavedViewsPanel scope="map" filters={filters} setFilters={setFilters} />
 
       <section className="panel space-y-3 px-3 py-3">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
@@ -325,6 +339,10 @@ export function MapPage() {
                 <Metric label="Edge" value={`${edgeDetails.edge.source} -> ${edgeDetails.edge.destination}`} mono />
                 <Metric label="Traffic" value={`${formatBytes(edgeDetails.edge.bytes)} / ${formatNumber(edgeDetails.edge.flows)} flows`} />
                 <Metric label="Protocols" value={edgeDetails.edge.protocols.join(', ')} />
+                <div className="rounded border border-slate-700/40 bg-slate-900/40 p-2">
+                  <div className="label mb-1">Destination Port Distribution (bytes)</div>
+                  <ReactECharts option={edgePortChart} style={{ height: 180 }} />
+                </div>
                 <FlowTable rows={edgeDetails.flows.data} />
               </div>
             ) : (

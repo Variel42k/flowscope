@@ -35,5 +35,16 @@ func (w *Worker) Run(ctx context.Context) {
 func (w *Worker) runOnce(ctx context.Context) error {
 	to := time.Now().UTC().Truncate(time.Minute)
 	from := to.Add(-10 * time.Minute)
-	return w.repo.RunRollups(ctx, from, to)
+	if err := w.repo.RunRollups(ctx, from, to); err != nil {
+		return err
+	}
+	events, err := w.repo.EvaluateAlerts(ctx, to)
+	if err != nil {
+		return err
+	}
+	if len(events) == 0 {
+		return nil
+	}
+	_, err = w.repo.StoreAlertEvents(ctx, events)
+	return err
 }

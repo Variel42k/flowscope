@@ -26,8 +26,25 @@ function defaultToISO() {
   return new Date().toISOString().slice(0, 19)
 }
 
-export function useGlobalFilters() {
-  const [filters, setFilters] = useState<GlobalFilters>({
+export const FILTER_KEYS: Array<keyof GlobalFilters> = [
+  'from',
+  'to',
+  'search',
+  'exporter',
+  'protocol',
+  'src_ip',
+  'dst_ip',
+  'subnet',
+  'src_port',
+  'dst_port',
+  'asn',
+  'country',
+  'min_bytes',
+  'min_flows',
+]
+
+export function makeDefaultFilters(): GlobalFilters {
+  return {
     from: defaultFromISO(),
     to: defaultToISO(),
     search: '',
@@ -42,7 +59,22 @@ export function useGlobalFilters() {
     country: '',
     min_bytes: '0',
     min_flows: '0',
-  })
+  }
+}
+
+export function normalizeSavedFilters(input: Record<string, string>): Partial<GlobalFilters> {
+  const out: Partial<GlobalFilters> = {}
+  for (const key of FILTER_KEYS) {
+    const value = input[key]
+    if (typeof value === 'string') {
+      out[key] = value
+    }
+  }
+  return out
+}
+
+export function useGlobalFilters() {
+  const [filters, setFilters] = useState<GlobalFilters>(makeDefaultFilters())
 
   const params = useMemo(() => {
     const p = new URLSearchParams()

@@ -7,11 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/flowscope/flowscope/internal/model"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
 	Username string `json:"username"`
+	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -23,9 +25,10 @@ func NewManager(secret string) *Manager {
 	return &Manager{secret: []byte(secret)}
 }
 
-func (m *Manager) Sign(username string) (string, error) {
+func (m *Manager) Sign(username string, role string) (string, error) {
 	claims := Claims{
 		Username: username,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "flowscope",
 			Subject:   username,
@@ -56,19 +59,33 @@ type contextKey string
 const userContextKey contextKey = "user"
 
 func UserFromContext(ctx context.Context) string {
+	return AuthUserFromContext(ctx).Username
+}
+
+func UserRoleFromContext(ctx context.Context) string {
+	return AuthUserFromContext(ctx).Role
+}
+
+func AuthUserFromContext(ctx context.Context) model.AuthUser {
 	if v := ctx.Value(userContextKey); v != nil {
+		if user, ok := v.(model.AuthUser); ok {
+			return user
+		}
 		if s, ok := v.(string); ok {
-			return s
+			return model.AuthUser{Username: s, Role: "admin"}
 		}
 	}
-	return ""
+	return model.AuthUser{}
 }
 
 func Middleware(manager *Manager, authDisabled bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if authDisabled {
-				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, "dev-admin")))
+				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, model.AuthUser{
+					Username: "dev-admin",
+					Role:     "admin",
+				})))
 				return
 			}
 			hdr := r.Header.Get("Authorization")
@@ -82,7 +99,48 @@ func Middleware(manager *Manager, authDisabled bool) func(http.Handler) http.Han
 				http.Error(w, "invalid token", http.StatusUnauthorized)
 				return
 			}
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, claims.Username)))
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, model.AuthUser{
+				Username: claims.Username,
+				Role:     claims.Role,
+			})))
+		})
+	}
+}
+
+func RequireRole(role string) func(http.Handler) http.Handler {
+	required := strings.ToLower(strings.TrimSpace(role))
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user := AuthUserFromContext(r.Context())
+			if required == "" || strings.EqualFold(user.Role, required) {
+				next.ServeHTTP(w, r)
+				return
+			}
+			http.Error(w, "forbidden", http.StatusForbidden)
+		})
+	}
+}
+
+func RequireAnyRole(roles ...string) func(http.Handler) http.Handler {
+	allowed := make(map[string]struct{}, len(roles))
+	for _, role := range roles {
+		role = strings.ToLower(strings.TrimSpace(role))
+		if role != "" {
+			allowed[role] = struct{}{}
+		}
+	}
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if len(allowed) == 0 {
+				next.ServeHTTP(w, r)
+				return
+			}
+			user := AuthUserFromContext(r.Context())
+			if _, ok := allowed[strings.ToLower(strings.TrimSpace(user.Role))]; ok {
+				next.ServeHTTP(w, r)
+				return
+			}
+			http.Error(w, "forbidden", http.StatusForbidden)
 		})
 	}
 }

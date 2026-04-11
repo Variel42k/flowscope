@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
-import { isLoggedIn } from './api/client'
+import { fetchMe, isLoggedIn } from './api/client'
 import { Layout } from './components/Layout'
 import { LoginForm } from './components/LoginForm'
+import { AlertsPage } from './pages/AlertsPage'
 import { FlowsPage } from './pages/FlowsPage'
 import { MapPage } from './pages/MapPage'
+import { OIDCCallbackPage } from './pages/OIDCCallbackPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { SankeyPage } from './pages/SankeyPage'
+import { ViewsPage } from './pages/ViewsPage'
 
 export function App() {
   const [authed, setAuthed] = useState(isLoggedIn())
+  const location = useLocation()
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -20,6 +24,15 @@ export function App() {
     }, 1500)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!authed) return
+    fetchMe().catch(() => {})
+  }, [authed])
+
+  if (!authed && location.pathname === '/oidc/callback') {
+    return <OIDCCallbackPage onSuccess={() => setAuthed(true)} />
+  }
 
   if (!authed) {
     return <LoginForm onSuccess={() => setAuthed(true)} />
@@ -33,6 +46,9 @@ export function App() {
         <Route path="/flows" element={<FlowsPage />} />
         <Route path="/sankey" element={<SankeyPage />} />
         <Route path="/map" element={<MapPage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/views" element={<ViewsPage />} />
+        <Route path="/oidc/callback" element={<Navigate to="/overview" replace />} />
       </Routes>
     </Layout>
   )

@@ -1,12 +1,13 @@
 import { FormEvent, useState } from 'react'
 
-import { login } from '../api/client'
+import { login, startOIDCLogin } from '../api/client'
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [username, setUsername] = useState('admin')
   const [password, setPassword] = useState('admin123')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const oidcEnabled = String(import.meta.env.VITE_OIDC_ENABLED ?? 'false').toLowerCase() === 'true'
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -39,6 +40,25 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         <button className="primary w-full" disabled={loading} type="submit">
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
+        {oidcEnabled && (
+          <button
+            className="secondary w-full"
+            disabled={loading}
+            type="button"
+            onClick={async () => {
+              setError('')
+              setLoading(true)
+              try {
+                await startOIDCLogin()
+              } catch (err: any) {
+                setError(err?.response?.data?.error ?? err.message)
+                setLoading(false)
+              }
+            }}
+          >
+            Sign in with OIDC
+          </button>
+        )}
       </form>
     </div>
   )

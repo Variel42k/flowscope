@@ -4,6 +4,7 @@ import ReactECharts from 'echarts-for-react'
 import { apiClient } from '../api/client'
 import { FilterBar } from '../components/FilterBar'
 import { KpiCard } from '../components/KpiCard'
+import { SavedViewsPanel } from '../components/SavedViewsPanel'
 import { useGlobalFilters } from '../hooks/useFilters'
 import { formatBytes, formatNumber } from '../lib/format'
 import { GraphResponse, TopItem } from '../lib/types'
@@ -12,6 +13,7 @@ export function OverviewPage() {
   const { filters, setFilters, params } = useGlobalFilters()
   const [talkers, setTalkers] = useState<TopItem[]>([])
   const [protocols, setProtocols] = useState<TopItem[]>([])
+  const [ports, setPorts] = useState<TopItem[]>([])
   const [interfaces, setInterfaces] = useState<TopItem[]>([])
   const [exporters, setExporters] = useState<any[]>([])
   const [graph, setGraph] = useState<GraphResponse | null>(null)
@@ -23,14 +25,16 @@ export function OverviewPage() {
     Promise.all([
       apiClient.get('/api/talkers/top?' + params.toString()),
       apiClient.get('/api/protocols/top?' + params.toString()),
+      apiClient.get('/api/ports/top?' + params.toString()),
       apiClient.get('/api/interfaces/top?' + params.toString()),
       apiClient.get('/api/exporters?' + params.toString()),
       apiClient.get('/api/map/graph?' + new URLSearchParams({ ...Object.fromEntries(params), mode: 'host_to_host' }).toString()),
     ])
-      .then(([t, p, i, e, g]) => {
+      .then(([t, p, pt, i, e, g]) => {
         if (!active) return
         setTalkers(t.data.data ?? [])
         setProtocols(p.data.data ?? [])
+        setPorts(pt.data.data ?? [])
         setInterfaces(i.data.data ?? [])
         setExporters(e.data.data ?? [])
         setGraph(g.data)
@@ -70,9 +74,18 @@ export function OverviewPage() {
     grid: { top: 30, left: 50, right: 20, bottom: 80 },
   }
 
+  const topPortsChart = {
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: ports.map((p) => p.key).slice(0, 12) },
+    yAxis: { type: 'value' },
+    series: [{ type: 'bar', data: ports.map((p) => p.bytes).slice(0, 12), itemStyle: { color: '#f59e0b' } }],
+    grid: { top: 30, left: 50, right: 20, bottom: 80 },
+  }
+
   return (
     <div className="space-y-4">
       <FilterBar filters={filters} setFilters={setFilters} />
+      <SavedViewsPanel scope="overview" filters={filters} setFilters={setFilters} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <KpiCard title="Total Throughput" value={formatBytes(totals.bytes)} subtitle="filtered window" />
         <KpiCard title="Total Flows" value={formatNumber(totals.flows)} subtitle="top-talker sum" />
@@ -80,7 +93,7 @@ export function OverviewPage() {
         <KpiCard title="Top Edges" value={formatNumber(totals.edges)} subtitle="graph edge count" />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="panel px-3 py-3">
           <h3 className="mb-2 text-sm font-semibold">Top Protocols by Bytes</h3>
           <ReactECharts option={topProtocolChart} style={{ height: 280 }} />
@@ -88,6 +101,10 @@ export function OverviewPage() {
         <div className="panel px-3 py-3">
           <h3 className="mb-2 text-sm font-semibold">Top Talkers by Bytes</h3>
           <ReactECharts option={topTalkersChart} style={{ height: 280 }} />
+        </div>
+        <div className="panel px-3 py-3">
+          <h3 className="mb-2 text-sm font-semibold">Top Destination Ports by Bytes</h3>
+          <ReactECharts option={topPortsChart} style={{ height: 280 }} />
         </div>
       </div>
 

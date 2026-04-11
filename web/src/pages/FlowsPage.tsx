@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { apiClient } from '../api/client'
 import { FilterBar } from '../components/FilterBar'
 import { FlowTable } from '../components/FlowTable'
+import { SavedViewsPanel } from '../components/SavedViewsPanel'
 import { useGlobalFilters } from '../hooks/useFilters'
 import { formatBytes, formatNumber } from '../lib/format'
 import { FlowRecord, PageResult } from '../lib/types'
@@ -44,6 +45,7 @@ export function FlowsPage() {
   return (
     <div className="space-y-4">
       <FilterBar filters={filters} setFilters={setFilters} />
+      <SavedViewsPanel scope="flows" filters={filters} setFilters={setFilters} />
       <div className="panel flex items-center justify-between px-3 py-2">
         <div className="flex gap-2">
           <button className={tab === 'active' ? 'primary' : 'secondary'} onClick={() => setTab('active')}>Active Flows</button>

@@ -9,6 +9,7 @@ type Props = {
 
 export function Layout({ children, onLoggedOut }: Props) {
   const user = localStorage.getItem('flowscope_user') ?? 'admin'
+  const role = localStorage.getItem('flowscope_role') ?? 'viewer'
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[1700px] flex-col px-3 pb-6 pt-4 md:px-6">
@@ -18,7 +19,7 @@ export function Layout({ children, onLoggedOut }: Props) {
           <p className="text-sm text-slate-400">Network Flow Observability Platform</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-300">Signed in as {user}</span>
+          <span className="text-xs text-slate-300">Signed in as {user} ({role})</span>
           <button
             className="secondary"
             onClick={() => {
@@ -36,6 +37,8 @@ export function Layout({ children, onLoggedOut }: Props) {
           ['/flows', 'Flows'],
           ['/sankey', 'Sankey'],
           ['/map', 'Interaction Map'],
+          ['/alerts', 'Alerts'],
+          ['/views', 'Saved Views'],
         ].map(([to, label]) => (
           <NavLink
             key={to}

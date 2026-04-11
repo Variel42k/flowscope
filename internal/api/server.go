@@ -19,15 +19,35 @@ import (
 )
 
 type Server struct {
-	cfg      config.Config
-	store    *storage.Repository
-	auth     *auth.Manager
-	handler  http.Handler
-	started  time.Time
+	cfg     config.Config
+	store   *storage.Repository
+	auth    *auth.Manager
+	oidc    *auth.OIDCProvider
+	handler http.Handler
+	started time.Time
 }
 
 func NewServer(cfg config.Config, store *storage.Repository, authMgr *auth.Manager) *Server {
-	s := &Server{cfg: cfg, store: store, auth: authMgr, started: time.Now().UTC()}
+	s := &Server{
+		cfg:   cfg,
+		store: store,
+		auth:  authMgr,
+		oidc: auth.NewOIDCProvider(auth.OIDCConfig{
+			Enabled:            cfg.OIDCEnabled,
+			IssuerURL:          cfg.OIDCIssuerURL,
+			ClientID:           cfg.OIDCClientID,
+			ClientSecret:       cfg.OIDCClientSecret,
+			RedirectURL:        cfg.OIDCRedirectURL,
+			SuccessRedirectURL: cfg.OIDCSuccessRedirect,
+			Scopes:             splitCSV(cfg.OIDCScopes),
+			RoleClaim:          cfg.OIDCRoleClaim,
+			AdminUsers:         cfg.OIDCAdminUsers,
+			AllowedDomains:     cfg.OIDCAllowedDomains,
+			AdminRole:          cfg.AdminRole,
+			ViewerRole:         cfg.ViewerRole,
+		}),
+		started: time.Now().UTC(),
+	}
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -35,9 +55,12 @@ func NewServer(cfg config.Config, store *storage.Repository, authMgr *auth.Manag
 	r.Use(corsMiddleware)
 	r.Get("/api/health", s.handleHealth)
 	r.Post("/api/auth/login", s.handleLogin)
+	r.Get("/api/auth/oidc/start", s.handleOIDCStart)
+	r.Get("/api/auth/oidc/callback", s.handleOIDCCallback)
 
 	r.Group(func(protected chi.Router) {
 		protected.Use(auth.Middleware(authMgr, cfg.AuthDisabled))
+		protected.Get("/api/auth/me", s.handleAuthMe)
 		protected.Get("/api/exporters", s.handleExporters)
 		protected.Get("/api/flows/active", s.handleFlowsActive)
 		protected.Get("/api/flows/historical", s.handleFlowsHistorical)
@@ -45,12 +68,23 @@ func NewServer(cfg config.Config, store *storage.Repository, authMgr *auth.Manag
 		protected.Get("/api/talkers/top", s.handleTopTalkers)
 		protected.Get("/api/protocols/top", s.handleTopProtocols)
 		protected.Get("/api/interfaces/top", s.handleTopInterfaces)
+		protected.Get("/api/ports/top", s.handleTopPorts)
 		protected.Get("/api/sankey", s.handleSankey)
 		protected.Get("/api/map/graph", s.handleGraph)
 		protected.Get("/api/map/node/{id}", s.handleMapNode)
 		protected.Get("/api/map/edge/{id}", s.handleMapEdge)
 		protected.Get("/api/search", s.handleSearch)
-		protected.Post("/api/inventory/import", s.handleInventoryImport)
+		protected.Get("/api/alerts/rules", s.handleAlertRulesList)
+		protected.Get("/api/alerts/events", s.handleAlertEventsList)
+		protected.Post("/api/alerts/evaluate", s.handleAlertsEvaluateNow)
+		protected.Get("/api/views", s.handleViewsList)
+		protected.Post("/api/views", s.handleViewsCreate)
+		protected.Put("/api/views/{id}", s.handleViewsUpdate)
+		protected.Delete("/api/views/{id}", s.handleViewsDelete)
+		protected.With(auth.RequireRole(cfg.AdminRole)).Post("/api/inventory/import", s.handleInventoryImport)
+		protected.With(auth.RequireRole(cfg.AdminRole)).Post("/api/alerts/rules", s.handleAlertRulesCreate)
+		protected.With(auth.RequireRole(cfg.AdminRole)).Put("/api/alerts/rules/{id}", s.handleAlertRulesUpdate)
+		protected.With(auth.RequireRole(cfg.AdminRole)).Delete("/api/alerts/rules/{id}", s.handleAlertRulesDelete)
 	})
 	s.handler = r
 	return s
@@ -66,10 +100,11 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"status":      "ok",
-		"service":     "flowscope-api",
-		"uptime_sec":  int(time.Since(s.started).Seconds()),
+		"status":       "ok",
+		"service":      "flowscope-api",
+		"uptime_sec":   int(time.Since(s.started).Seconds()),
 		"auth_enabled": !s.cfg.AuthDisabled,
+		"oidc_enabled": s.cfg.OIDCEnabled,
 	})
 }
 
@@ -86,12 +121,16 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusUnauthorized, errors.New("invalid credentials"))
 		return
 	}
-	token, err := s.auth.Sign(req.Username)
+	role := s.cfg.AdminRole
+	if strings.TrimSpace(role) == "" {
+		role = "admin"
+	}
+	token, err := s.auth.Sign(req.Username, role)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"token": token, "user": req.Username})
+	writeJSON(w, http.StatusOK, map[string]any{"token": token, "user": req.Username, "role": role, "auth_mode": "local"})
 }
 
 func (s *Server) handleExporters(w http.ResponseWriter, r *http.Request) {
@@ -288,7 +327,7 @@ func writeErr(w http.ResponseWriter, status int, err error) {
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Authorization,Content-Type")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
@@ -296,4 +335,16 @@ func corsMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func splitCSV(v string) []string {
+	parts := strings.Split(v, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
 }

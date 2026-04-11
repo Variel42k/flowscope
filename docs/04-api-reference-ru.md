@@ -8,6 +8,9 @@
 
 ### Auth
 - `POST /api/auth/login`
+- `GET /api/auth/oidc/start`
+- `GET /api/auth/oidc/callback`
+- `GET /api/auth/me`
 
 ### Health
 - `GET /api/health`
@@ -22,6 +25,7 @@
 - `GET /api/talkers/top`
 - `GET /api/protocols/top`
 - `GET /api/interfaces/top`
+- `GET /api/ports/top`
 
 ### Visuals
 - `GET /api/sankey`
@@ -32,6 +36,16 @@
 ### Utility
 - `GET /api/search`
 - `POST /api/inventory/import`
+- `GET /api/views`
+- `POST /api/views`
+- `PUT /api/views/:id`
+- `DELETE /api/views/:id`
+- `GET /api/alerts/rules`
+- `POST /api/alerts/rules`
+- `PUT /api/alerts/rules/:id`
+- `DELETE /api/alerts/rules/:id`
+- `GET /api/alerts/events`
+- `POST /api/alerts/evaluate`
 
 Поддерживаемые query params: `from`, `to`, `page`, `page_size`, `sort_by`, `sort_dir`, сетевые и protocol filters.
 
@@ -43,6 +57,9 @@ Base URLs:
 
 ### Auth
 - `POST /api/auth/login`
+- `GET /api/auth/oidc/start`
+- `GET /api/auth/oidc/callback`
+- `GET /api/auth/me`
 
 ### Health
 - `GET /api/health`
@@ -57,6 +74,7 @@ Base URLs:
 - `GET /api/talkers/top`
 - `GET /api/protocols/top`
 - `GET /api/interfaces/top`
+- `GET /api/ports/top`
 
 ### Visuals
 - `GET /api/sankey`
@@ -67,5 +85,15 @@ Base URLs:
 ### Utility
 - `GET /api/search`
 - `POST /api/inventory/import`
+- `GET /api/views`
+- `POST /api/views`
+- `PUT /api/views/:id`
+- `DELETE /api/views/:id`
+- `GET /api/alerts/rules`
+- `POST /api/alerts/rules`
+- `PUT /api/alerts/rules/:id`
+- `DELETE /api/alerts/rules/:id`
+- `GET /api/alerts/events`
+- `POST /api/alerts/evaluate`
 
 Supported query params include `from`, `to`, `page`, `page_size`, `sort_by`, `sort_dir`, and network/protocol filters.

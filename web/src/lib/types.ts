@@ -127,3 +127,53 @@ export type EdgeDetails = {
   exporters: TopItem[]
   flows: PageResult<FlowRecord>
 }
+
+export type AuthSession = {
+  token: string
+  user: string
+  role: string
+  auth_mode?: 'local' | 'oidc'
+}
+
+export type AlertRule = {
+  rule_id: string
+  name: string
+  rule_type: 'new_edge' | 'fanout_external' | 'high_byte_edge' | 'port_outlier'
+  enabled: boolean
+  threshold_value: number
+  window_minutes: number
+  severity: 'low' | 'medium' | 'high'
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export type AlertEvent = {
+  event_id: string
+  event_key: string
+  rule_id: string
+  rule_name: string
+  rule_type: string
+  severity: string
+  detected_at: string
+  window_from: string
+  window_to: string
+  node_id?: string
+  edge_id?: string
+  description: string
+  bytes: number
+  flows: number
+  metadata?: Record<string, unknown>
+}
+
+export type SavedView = {
+  view_id: string
+  name: string
+  description: string
+  scope: 'overview' | 'flows' | 'sankey' | 'map' | 'global'
+  owner_user: string
+  is_shared: boolean
+  filters: Record<string, string>
+  created_at: string
+  updated_at: string
+}

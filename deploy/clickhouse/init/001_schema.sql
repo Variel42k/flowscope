@@ -199,3 +199,62 @@ ENGINE = ReplacingMergeTree(updated_at)
 PARTITION BY toYYYYMMDD(updated_at)
 ORDER BY (cidr, asset_id)
 SETTINGS index_granularity = 8192;
+
+CREATE TABLE IF NOT EXISTS flowscope.alert_rules (
+    rule_id String,
+    name String,
+    rule_type LowCardinality(String),
+    enabled Bool,
+    threshold_value UInt64,
+    window_minutes UInt32,
+    severity LowCardinality(String),
+    created_by String,
+    created_at DateTime64(3, 'UTC'),
+    updated_at DateTime64(3, 'UTC'),
+    deleted Bool
+)
+ENGINE = ReplacingMergeTree(updated_at)
+PARTITION BY toYYYYMMDD(updated_at)
+ORDER BY (rule_id)
+SETTINGS index_granularity = 8192;
+
+CREATE TABLE IF NOT EXISTS flowscope.alert_events (
+    event_id String,
+    event_key String,
+    rule_id String,
+    rule_name String,
+    rule_type LowCardinality(String),
+    severity LowCardinality(String),
+    detected_at DateTime64(3, 'UTC'),
+    window_from DateTime('UTC'),
+    window_to DateTime('UTC'),
+    node_id String,
+    edge_id String,
+    description String,
+    bytes UInt64,
+    flows UInt64,
+    metadata_json String
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMMDD(detected_at)
+ORDER BY (detected_at, severity, rule_id, event_id)
+TTL detected_at + INTERVAL 180 DAY
+SETTINGS index_granularity = 8192;
+
+CREATE TABLE IF NOT EXISTS flowscope.saved_views (
+    view_id String,
+    name String,
+    description String,
+    scope LowCardinality(String),
+    owner_user String,
+    is_shared Bool,
+    filters_json String,
+    created_at DateTime64(3, 'UTC'),
+    updated_at DateTime64(3, 'UTC'),
+    deleted Bool
+)
+ENGINE = ReplacingMergeTree(updated_at)
+PARTITION BY toYYYYMMDD(updated_at)
+ORDER BY (scope, owner_user, view_id)
+TTL updated_at + INTERVAL 365 DAY
+SETTINGS index_granularity = 8192;

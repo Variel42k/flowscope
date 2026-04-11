@@ -99,13 +99,13 @@ type QueryFilter struct {
 }
 
 type PageResult[T any] struct {
-	Data       []T  `json:"data"`
-	Page       int  `json:"page"`
-	PageSize   int  `json:"page_size"`
-	Total      uint64 `json:"total"`
-	HasNext    bool `json:"has_next"`
-	SortBy     string `json:"sort_by"`
-	SortDir    string `json:"sort_dir"`
+	Data     []T    `json:"data"`
+	Page     int    `json:"page"`
+	PageSize int    `json:"page_size"`
+	Total    uint64 `json:"total"`
+	HasNext  bool   `json:"has_next"`
+	SortBy   string `json:"sort_by"`
+	SortDir  string `json:"sort_dir"`
 }
 
 type TopItem struct {
@@ -123,20 +123,20 @@ type TimePoint struct {
 }
 
 type GraphNode struct {
-	ID        string            `json:"id"`
-	Label     string            `json:"label"`
-	Type      string            `json:"type"`
-	BytesIn   uint64            `json:"bytes_in"`
-	BytesOut  uint64            `json:"bytes_out"`
-	PacketsIn uint64            `json:"packets_in"`
-	PacketsOut uint64           `json:"packets_out"`
-	FlowCount uint64            `json:"flow_count"`
-	LastSeen  time.Time         `json:"last_seen"`
-	Tags      map[string]string `json:"tags"`
-	Private   bool              `json:"private"`
-	Internal  bool              `json:"internal"`
-	Collapsed bool              `json:"collapsed"`
-	Children  []string          `json:"children,omitempty"`
+	ID         string            `json:"id"`
+	Label      string            `json:"label"`
+	Type       string            `json:"type"`
+	BytesIn    uint64            `json:"bytes_in"`
+	BytesOut   uint64            `json:"bytes_out"`
+	PacketsIn  uint64            `json:"packets_in"`
+	PacketsOut uint64            `json:"packets_out"`
+	FlowCount  uint64            `json:"flow_count"`
+	LastSeen   time.Time         `json:"last_seen"`
+	Tags       map[string]string `json:"tags"`
+	Private    bool              `json:"private"`
+	Internal   bool              `json:"internal"`
+	Collapsed  bool              `json:"collapsed"`
+	Children   []string          `json:"children,omitempty"`
 }
 
 type GraphEdge struct {
@@ -155,11 +155,11 @@ type GraphEdge struct {
 }
 
 type GraphResponse struct {
-	Nodes       []GraphNode          `json:"nodes"`
-	Edges       []GraphEdge          `json:"edges"`
-	Mode        string               `json:"mode"`
-	GroupBy     string               `json:"group_by"`
-	Suspicious  []SuspiciousInteraction `json:"suspicious_interactions"`
+	Nodes      []GraphNode             `json:"nodes"`
+	Edges      []GraphEdge             `json:"edges"`
+	Mode       string                  `json:"mode"`
+	GroupBy    string                  `json:"group_by"`
+	Suspicious []SuspiciousInteraction `json:"suspicious_interactions"`
 }
 
 type SuspiciousInteraction struct {
@@ -171,23 +171,23 @@ type SuspiciousInteraction struct {
 }
 
 type NodeDetails struct {
-	Node        GraphNode   `json:"node"`
-	Inbound     TopItem     `json:"inbound_totals"`
-	Outbound    TopItem     `json:"outbound_totals"`
-	TopPeers    []TopItem   `json:"top_peers"`
-	TopPorts    []TopItem   `json:"top_ports"`
-	TopProtocols []TopItem  `json:"top_protocols"`
-	Series      []TimePoint `json:"timeseries"`
+	Node         GraphNode   `json:"node"`
+	Inbound      TopItem     `json:"inbound_totals"`
+	Outbound     TopItem     `json:"outbound_totals"`
+	TopPeers     []TopItem   `json:"top_peers"`
+	TopPorts     []TopItem   `json:"top_ports"`
+	TopProtocols []TopItem   `json:"top_protocols"`
+	Series       []TimePoint `json:"timeseries"`
 }
 
 type EdgeDetails struct {
-	Edge         GraphEdge   `json:"edge"`
-	Directional  []TopItem   `json:"directional_stats"`
-	Series       []TimePoint `json:"timeseries"`
-	Protocols    []TopItem   `json:"protocols"`
-	PortDist     []TopItem   `json:"port_distribution"`
-	Exporters    []TopItem   `json:"exporters"`
-	FlowPage     PageResult[FlowRecord] `json:"flows"`
+	Edge        GraphEdge              `json:"edge"`
+	Directional []TopItem              `json:"directional_stats"`
+	Series      []TimePoint            `json:"timeseries"`
+	Protocols   []TopItem              `json:"protocols"`
+	PortDist    []TopItem              `json:"port_distribution"`
+	Exporters   []TopItem              `json:"exporters"`
+	FlowPage    PageResult[FlowRecord] `json:"flows"`
 }
 
 type SankeyNode struct {
@@ -204,4 +204,52 @@ type SankeyLink struct {
 type SankeyResponse struct {
 	Nodes []SankeyNode `json:"nodes"`
 	Links []SankeyLink `json:"links"`
+}
+
+type AuthUser struct {
+	Username string `json:"username"`
+	Role     string `json:"role"`
+}
+
+type AlertRule struct {
+	RuleID         string    `json:"rule_id"`
+	Name           string    `json:"name"`
+	RuleType       string    `json:"rule_type"`
+	Enabled        bool      `json:"enabled"`
+	ThresholdValue uint64    `json:"threshold_value"`
+	WindowMinutes  uint32    `json:"window_minutes"`
+	Severity       string    `json:"severity"`
+	CreatedBy      string    `json:"created_by"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+type AlertEvent struct {
+	EventID     string         `json:"event_id"`
+	EventKey    string         `json:"event_key"`
+	RuleID      string         `json:"rule_id"`
+	RuleName    string         `json:"rule_name"`
+	RuleType    string         `json:"rule_type"`
+	Severity    string         `json:"severity"`
+	DetectedAt  time.Time      `json:"detected_at"`
+	WindowFrom  time.Time      `json:"window_from"`
+	WindowTo    time.Time      `json:"window_to"`
+	NodeID      string         `json:"node_id,omitempty"`
+	EdgeID      string         `json:"edge_id,omitempty"`
+	Description string         `json:"description"`
+	Bytes       uint64         `json:"bytes"`
+	Flows       uint64         `json:"flows"`
+	Metadata    map[string]any `json:"metadata,omitempty"`
+}
+
+type SavedView struct {
+	ViewID      string            `json:"view_id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Scope       string            `json:"scope"`
+	OwnerUser   string            `json:"owner_user"`
+	IsShared    bool              `json:"is_shared"`
+	Filters     map[string]string `json:"filters"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
 }

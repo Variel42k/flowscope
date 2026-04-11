@@ -9,30 +9,42 @@ import (
 )
 
 type Config struct {
-	HTTPAddr              string
-	ClickHouseDSN         string
-	JWTSecret             string
-	AdminUser             string
-	AdminPassword         string
-	AuthDisabled          bool
-	LogLevel              string
-	RetentionDays         int
-	InventoryPath         string
-	InventoryFormat       string
-	GeoIPCityPath         string
-	GeoIPASNPath          string
-	RDNSCacheTTL          time.Duration
-	EnableGeoIP           bool
-	EnableRDNS            bool
-	EnableInventory       bool
-	EnableInterfaceAlias  bool
-	InterfaceAliasPath    string
-	CollectorNetFlowV5    string
-	CollectorNetFlowV9    string
-	CollectorIPFIX        string
-	CollectorSFlow        string
-	QueryDefaultWindow    time.Duration
-	RollupInterval        time.Duration
+	HTTPAddr             string
+	ClickHouseDSN        string
+	JWTSecret            string
+	AdminUser            string
+	AdminPassword        string
+	AdminRole            string
+	ViewerRole           string
+	AuthDisabled         bool
+	LogLevel             string
+	RetentionDays        int
+	OIDCEnabled          bool
+	OIDCIssuerURL        string
+	OIDCClientID         string
+	OIDCClientSecret     string
+	OIDCRedirectURL      string
+	OIDCSuccessRedirect  string
+	OIDCScopes           string
+	OIDCRoleClaim        string
+	OIDCAdminUsers       []string
+	OIDCAllowedDomains   []string
+	InventoryPath        string
+	InventoryFormat      string
+	GeoIPCityPath        string
+	GeoIPASNPath         string
+	RDNSCacheTTL         time.Duration
+	EnableGeoIP          bool
+	EnableRDNS           bool
+	EnableInventory      bool
+	EnableInterfaceAlias bool
+	InterfaceAliasPath   string
+	CollectorNetFlowV5   string
+	CollectorNetFlowV9   string
+	CollectorIPFIX       string
+	CollectorSFlow       string
+	QueryDefaultWindow   time.Duration
+	RollupInterval       time.Duration
 }
 
 func Load() Config {
@@ -42,9 +54,21 @@ func Load() Config {
 		JWTSecret:            env("FLOWSCOPE_JWT_SECRET", "flowscope-dev-secret"),
 		AdminUser:            env("FLOWSCOPE_ADMIN_USER", "admin"),
 		AdminPassword:        env("FLOWSCOPE_ADMIN_PASSWORD", "admin123"),
+		AdminRole:            env("FLOWSCOPE_ADMIN_ROLE", "admin"),
+		ViewerRole:           env("FLOWSCOPE_VIEWER_ROLE", "viewer"),
 		AuthDisabled:         envBool("FLOWSCOPE_AUTH_DISABLED", false),
 		LogLevel:             env("FLOWSCOPE_LOG_LEVEL", "info"),
 		RetentionDays:        envInt("FLOWSCOPE_RETENTION_DAYS", 30),
+		OIDCEnabled:          envBool("FLOWSCOPE_OIDC_ENABLED", false),
+		OIDCIssuerURL:        env("FLOWSCOPE_OIDC_ISSUER_URL", ""),
+		OIDCClientID:         env("FLOWSCOPE_OIDC_CLIENT_ID", ""),
+		OIDCClientSecret:     env("FLOWSCOPE_OIDC_CLIENT_SECRET", ""),
+		OIDCRedirectURL:      env("FLOWSCOPE_OIDC_REDIRECT_URL", ""),
+		OIDCSuccessRedirect:  env("FLOWSCOPE_OIDC_SUCCESS_REDIRECT", "http://localhost:5173/oidc/callback"),
+		OIDCScopes:           env("FLOWSCOPE_OIDC_SCOPES", "openid,profile,email"),
+		OIDCRoleClaim:        env("FLOWSCOPE_OIDC_ROLE_CLAIM", "role"),
+		OIDCAdminUsers:       envCSV("FLOWSCOPE_OIDC_ADMIN_USERS"),
+		OIDCAllowedDomains:   envCSV("FLOWSCOPE_OIDC_ALLOWED_DOMAINS"),
 		InventoryPath:        env("FLOWSCOPE_INVENTORY_PATH", "/data/inventory.sample.yaml"),
 		InventoryFormat:      env("FLOWSCOPE_INVENTORY_FORMAT", "yaml"),
 		GeoIPCityPath:        env("FLOWSCOPE_GEOIP_CITY_PATH", ""),
@@ -73,6 +97,22 @@ func env(k, def string) string {
 		return v
 	}
 	return def
+}
+
+func envCSV(k string) []string {
+	v := strings.TrimSpace(env(k, ""))
+	if v == "" {
+		return nil
+	}
+	parts := strings.Split(v, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(strings.ToLower(p))
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func envInt(k string, def int) int {

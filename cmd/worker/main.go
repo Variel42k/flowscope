@@ -23,6 +23,9 @@ func main() {
 	if err := repo.ApplyRetention(context.Background(), cfg.RetentionDays); err != nil {
 		log.Printf("retention apply warning: %v", err)
 	}
+	if err := repo.EnsureDefaultAlertRules(context.Background(), cfg.AdminUser); err != nil {
+		log.Printf("alert rule bootstrap warning: %v", err)
+	}
 	worker := rollup.NewWorker(repo, cfg.RollupInterval)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
