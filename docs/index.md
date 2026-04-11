@@ -19,3 +19,4 @@ All documents in this folder are bilingual: **Русский + English**.
 12. [Interaction map behavior / Поведение interaction map](./interaction-map.md)
 13. [Capability matrix / Карточка возможностей](./capability-matrix.md)
 14. [GitHub presentation kit / Набор для оформления GitHub](./github-presentation-ru.md)
+15. [Wiki source pages / Исходники Wiki](./wiki/Home.md)

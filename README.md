@@ -172,6 +172,7 @@ docs/          architecture, operations, API, security, runbooks
 ## Documentation / Документация
 
 - [Docs index](docs/index.md)
+- [Wiki source pages / Исходники Wiki](docs/wiki/Home.md)
 - [Quick start](docs/01-quickstart-ru.md)
 - [Web UI user guide](docs/02-user-guide-web-ru.md)
 - [Admin operations](docs/03-admin-operations-ru.md)
@@ -186,6 +187,27 @@ docs/          architecture, operations, API, security, runbooks
 - [Interaction map behavior](docs/interaction-map.md)
 - [Capability matrix](docs/capability-matrix.md)
 - [GitHub presentation kit](docs/github-presentation-ru.md)
+
+## GitHub Wiki
+
+If your repository Wiki page still shows the default `Welcome to the ... wiki!`, enable Wiki in repository settings and push these pages from `docs/wiki/`.  
+Если в Wiki пока видна стандартная страница `Welcome to the ... wiki!`, включите Wiki в настройках репозитория и опубликуйте страницы из `docs/wiki/`.
+
+Manual publish from local machine:
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/publish-wiki.ps1
+```
+
+For private repositories, use `GITHUB_TOKEN` (or pass `-Token`):
+
+```bash
+$env:GITHUB_TOKEN="ghp_xxx"
+powershell -ExecutionPolicy Bypass -File scripts/publish-wiki.ps1
+```
+
+Or enable automatic sync via GitHub Actions workflow:
+- `.github/workflows/wiki-sync.yml`
 
 ## Contributing
 
