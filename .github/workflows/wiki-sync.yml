@@ -23,9 +23,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          git clone "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git" wiki
-          rsync -av --delete docs/wiki/ wiki/
-          cd wiki
+          WIKI_DIR="$(mktemp -d)"
+          trap 'rm -rf "${WIKI_DIR}"' EXIT
+          if ! git clone "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git" "${WIKI_DIR}"; then
+            echo "Failed to clone wiki repository. Ensure Wiki is enabled in repository settings."
+            exit 1
+          fi
+          rsync -av --delete docs/wiki/ "${WIKI_DIR}/"
+          cd "${WIKI_DIR}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .
