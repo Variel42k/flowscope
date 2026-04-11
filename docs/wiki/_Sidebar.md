@@ -1,9 +1,9 @@
 ﻿## FlowScope Wiki
 
-- [Home](Home)
-- [Quick Start](Quick-Start)
-- [Web Interface](Web-Interface)
-- [Architecture](Architecture)
-- [API Reference](API-Reference)
-- [Security and Hardening](Security-and-Hardening)
-- [Operations](Operations)
+- [Главная / Home](Home)
+- [Быстрый старт / Quick Start](Quick-Start)
+- [Web интерфейс / Web Interface](Web-Interface)
+- [Архитектура / Architecture](Architecture)
+- [Справочник API / API Reference](API-Reference)
+- [Безопасность / Security and Hardening](Security-and-Hardening)
+- [Эксплуатация / Operations](Operations)

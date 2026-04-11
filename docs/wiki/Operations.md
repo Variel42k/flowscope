@@ -1,6 +1,55 @@
 ﻿# Operations / Эксплуатация
 
-## Service Lifecycle / Жизненный цикл сервисов
+## Русский
+
+### Жизненный цикл сервисов
+
+Запуск:
+
+```bash
+docker compose up --build -d
+```
+
+Статус:
+
+```bash
+docker compose ps
+docker compose logs -f api collector worker web
+```
+
+Остановка:
+
+```bash
+docker compose down
+```
+
+### Резервное копирование
+
+- Регулярно делайте backup ClickHouse volumes.
+- Зафиксируйте политику хранения backup-копий.
+- Проверяйте restore-процедуру минимум раз в месяц.
+
+### Восстановление
+
+1. Остановите stack.
+2. Восстановите ClickHouse volumes из backup.
+3. Запустите stack и проверьте health endpoint.
+
+### Обновление
+
+1. Получите последние изменения репозитория.
+2. Проверьте `.env.example` на новые переменные.
+3. Пересоберите и перезапустите:
+
+```bash
+docker compose up --build -d
+```
+
+4. Проверьте ключевой путь в UI: Overview -> Map -> edge drill-down.
+
+## English
+
+### Service Lifecycle
 
 Start:
 
@@ -21,19 +70,19 @@ Stop:
 docker compose down
 ```
 
-## Backup / Резервное копирование
+### Backup
 
 - Back up ClickHouse volumes regularly.
-- Keep backup retention policy documented.
+- Document backup retention policy.
 - Test restore procedure at least monthly.
 
-## Restore / Восстановление
+### Restore
 
-1. Stop stack.
-2. Restore ClickHouse data volumes from backup.
-3. Start stack and verify health endpoint.
+1. Stop the stack.
+2. Restore ClickHouse volumes from backup.
+3. Start the stack and verify the health endpoint.
 
-## Upgrade / Обновление
+### Upgrade
 
 1. Pull latest repository changes.
 2. Review `.env.example` for new settings.
@@ -43,4 +92,4 @@ docker compose down
 docker compose up --build -d
 ```
 
-4. Validate key flows in UI: Overview -> Map -> edge drill-down.
+4. Validate key UI flow: Overview -> Map -> edge drill-down.
